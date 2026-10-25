@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — in-place corrections
+
+- Update the existing generated layer automatically after a correction or matching rerun.
+- Preserve layer identity and manual edits; keep replacement undoable and reconcile Undo/redo.
+- Refuse shared/locked/retargeted media or changed source-frame ranges; offer explicit opt-out.
+- Route selected cutouts back to their original input.
+
+
 ## 0.7.0-rc1 — quality of life
 
 - Exact-frame detail review, crop zoom, comparison split and selectable/custom review backgrounds.

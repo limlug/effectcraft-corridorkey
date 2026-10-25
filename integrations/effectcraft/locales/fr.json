@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name} : {used}/{total} Mo utilisés ; {free} Mo libres",
   "Frame {frame} / {count}": "Image {frame} / {count}",
   "Source changed; inspect reference again.": "Source modifiée ; examinez à nouveau la référence.",
-  "Use layer masks": "Utiliser les masques du calque"
+  "Use layer masks": "Utiliser les masques du calque",
+  "Update inserted result in place": "Actualiser le résultat inséré sur place",
+  "Existing result updated. Layer settings are preserved.": "Résultat existant actualisé. Les réglages du calque sont conservés.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "Le calque a changé ou est verrouillé. Désactivez la mise à jour sur place pour en insérer un nouveau.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "La plage traitée a changé. Désactivez la mise à jour sur place pour insérer un nouveau calque.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "Ce média est partagé. Désactivez la mise à jour sur place pour insérer un nouveau calque."
 }

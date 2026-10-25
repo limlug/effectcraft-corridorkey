@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: გამოყენებულია {used}/{total} MB; თავისუფალია {free} MB",
   "Frame {frame} / {count}": "კადრი {frame} / {count}",
   "Source changed; inspect reference again.": "წყარო შეიცვალა; კადრი ხელახლა შეამოწმეთ.",
-  "Use layer masks": "ფენის ნიღბების გამოყენება"
+  "Use layer masks": "ფენის ნიღბების გამოყენება",
+  "Update inserted result in place": "ჩასმული შედეგის ადგილზე განახლება",
+  "Existing result updated. Layer settings are preserved.": "შედეგი განახლდა. ფენის პარამეტრები შენარჩუნებულია.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "ფენა შეიცვალა ან დაბლოკილია. ახალი ფენისთვის გამორთეთ ადგილზე განახლება.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "დამუშავებული დიაპაზონი შეიცვალა. ახალი ფენისთვის გამორთეთ ადგილზე განახლება.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "ეს მედია გაზიარებულია. ახალი ფენისთვის გამორთეთ ადგილზე განახლება."
 }

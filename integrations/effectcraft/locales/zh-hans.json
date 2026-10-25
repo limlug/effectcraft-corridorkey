@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}：已用 {used}/{total} MB；可用 {free} MB",
   "Frame {frame} / {count}": "帧 {frame} / {count}",
   "Source changed; inspect reference again.": "源文件已更改；请重新检查参考帧。",
-  "Use layer masks": "使用图层蒙版"
+  "Use layer masks": "使用图层蒙版",
+  "Update inserted result in place": "原位更新已插入的结果",
+  "Existing result updated. Layer settings are preserved.": "已更新现有结果。图层设置保持不变。",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "结果图层已更改或锁定。请关闭原位更新以插入新图层。",
+  "The processed range changed. Disable in-place update to insert a new layer.": "处理范围已更改。请关闭原位更新以插入新图层。",
+  "This result media is shared. Disable in-place update to insert a new layer.": "此结果媒体被多处使用。请关闭原位更新以插入新图层。"
 }

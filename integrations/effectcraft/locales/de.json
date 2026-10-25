@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: {used}/{total} MB belegt; {free} MB frei",
   "Frame {frame} / {count}": "Bild {frame} / {count}",
   "Source changed; inspect reference again.": "Quelle geändert; Referenz erneut prüfen.",
-  "Use layer masks": "Ebenenmasken verwenden"
+  "Use layer masks": "Ebenenmasken verwenden",
+  "Update inserted result in place": "Eingefügtes Ergebnis direkt aktualisieren",
+  "Existing result updated. Layer settings are preserved.": "Vorhandenes Ergebnis aktualisiert. Ebeneneinstellungen bleiben erhalten.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "Die Ergebnisebene wurde geändert oder ist gesperrt. Für eine neue Ebene die direkte Aktualisierung ausschalten.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "Der verarbeitete Bereich wurde geändert. Für eine neue Ebene die direkte Aktualisierung ausschalten.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "Dieses Ergebnismedium wird mehrfach verwendet. Für eine neue Ebene die direkte Aktualisierung ausschalten."
 }

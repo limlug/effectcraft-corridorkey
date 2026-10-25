@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: занято {used}/{total} МБ; свободно {free} МБ",
   "Frame {frame} / {count}": "Кадр {frame} / {count}",
   "Source changed; inspect reference again.": "Источник изменён; проверьте опорный кадр заново.",
-  "Use layer masks": "Использовать маски слоя"
+  "Use layer masks": "Использовать маски слоя",
+  "Update inserted result in place": "Обновлять вставленный результат на месте",
+  "Existing result updated. Layer settings are preserved.": "Результат обновлён. Настройки слоя сохранены.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "Слой изменён или заблокирован. Отключите обновление на месте для вставки нового слоя.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "Обработанный диапазон изменён. Отключите обновление на месте для нового слоя.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "Этот результат используется в нескольких местах. Отключите обновление на месте для нового слоя."
 }

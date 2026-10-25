@@ -77,6 +77,9 @@
     var feather = field(finish, t("Feather px"), "feather", "0");
     var coreStrength=field(finish,t("Opaque core %"),"coreStrength","0");
     var edgeStrength=field(finish,t("Edge coverage %"),"edgeStrength","100");
+    var updateInPlace=add(finish,"checkbox","updateInPlace",t("Update inserted result in place"));
+    updateInPlace.value=setting("updateInPlace","true")==="true";
+    updateInPlace.onClick=function(){save("updateInPlace",!!updateInPlace.value);};
     var refine = add(finish,"button","refine",t("Apply correction without running AI"));
     var presets = choice(finish, t("My presets"), "presets", [t("Default")], 0);
     var presetName = field(finish, t("Name"), "presetName", t("My preset"));
@@ -250,12 +253,12 @@
             var r=records[i];
             for(var j=saved.length-1;j>=0;j--)if(saved[j].id===r.job.id)saved.splice(j,1);
             saved.push({id:r.job.id,project:r.project,comp:r.comp.id,layer:r.layer.id,path:r.path,
-                inserted:r.inserted,insertedLayer:r.insertedLayer});
+                inserted:r.inserted,insertedLayer:r.insertedLayer,updateTarget:r.updateTarget,autoApply:r.autoApply});
         }
         if(saved.length>200)saved=saved.slice(saved.length-200);
         save("records", JSON.stringify(saved));
         save("pending", pending ? JSON.stringify({id:pending.job.id,project:pending.project,comp:pending.comp.id,
-            layer:pending.layer.id,path:pending.path,inserted:pending.inserted,insertedLayer:pending.insertedLayer}) : "");
+            layer:pending.layer.id,path:pending.path,inserted:pending.inserted,insertedLayer:pending.insertedLayer,updateTarget:pending.updateTarget,autoApply:pending.autoApply}) : "");
     }
     function terminal(job) { return job.state === "completed" || job.state === "failed" || job.state === "cancelled"; }
     function refreshQueue() {
@@ -284,19 +287,28 @@
         if (!(comp instanceof CompItem) || comp.selectedLayers.length < 1)
             throw new Error(t("Select a video layer in the timeline."));
         if (!app.project.file) throw new Error(t("Save the project first."));
-        var layer = comp.selectedLayers[at || 0], source = layer.source;
+        var layer = comp.selectedLayers[at || 0], source = layer.source, resultRecord=null;
+        for(var r=records.length-1;r>=0;r--){var linked=records[r];
+            if(linked.comp===comp && linked.insertedLayer===layer.id && source && source.file && source.file.fsName===linked.job.output){
+                resultRecord=linked;
+                layer=linked.layer;source=linked.source;break;
+            }
+        }
         if (!(source instanceof FootageItem) || !source.file || source.mainSource.isStill || !layer.hasVideo)
             throw new Error(t("Select a video file. Precomps and image sequences are not supported yet."));
         if (layer.locked) throw new Error(t("Unlock the selected layer first."));
         if (!/\.(mov|mp4|mkv|avi|webm|m4v|mxf)$/i.test(source.file.fsName))
             throw new Error(t("Select a supported video file."));
         if (/^0\.16\./.test(app.version)) checkLegacyLayer(layer);
-        return {comp: comp, layer: layer, source: source};
+        return {comp: comp, layer: layer, source: source, resultRecord:resultRecord};
     }
     function updateSelection() {
         var valid = false;
         try {
             var selected = chosenLayer(), name = selected.layer.name;
+            if(selected.resultRecord && (!pending || terminal(pending.job) && (pending.layer!==selected.layer || pending.comp!==selected.comp))){
+                stopPlayer();pending=selected.resultRecord;refreshQueue();update(pending.job);return;
+            }
             selection.text = t("Selected ({count}):\n{name}", {count:selected.comp.selectedLayers.length,name:name});
             valid = true;
         }
@@ -483,13 +495,33 @@
             var item=selected[n];
             pending={job:jobs[n],layer:item.layer,source:item.source,comp:item.comp,path:item.source.file.fsName,
                 project:app.project.file.fsName,inserted:false};
+            for(var old=records.length-1;old>=0;old--){var prior=records[old];
+                if(prior.comp===item.comp && prior.layer===item.layer && prior.project===pending.project){
+                    var target=updateTargetFor(prior);if(target){pending.updateTarget=target;pending.autoApply=!!updateInPlace.value;break;}
+                }}
             records.push(pending);
         }
         remember(); refreshQueue(); update(pending.job);
     }
+    function resultLayer(record){
+        if(record.insertedLayer===undefined)return null;
+        for(var n=1;n<=record.comp.numLayers;n++){var l=record.comp.layer(n);if(l.id===record.insertedLayer)return l;}
+        return null;
+    }
+    function updateTargetFor(record){
+        var l=resultLayer(record);
+        if(record.job && l && l.source && l.source.file && l.source.file.fsName===record.job.output)
+            return {layer:l.id,output:record.job.output,job:record.job.id};
+        if(l && l.source && l.source.file){
+            for(var i=records.length-1;i>=0;i--)if(records[i].comp===record.comp && records[i].layer===record.layer && records[i].job.output===l.source.file.fsName)
+                return {layer:l.id,output:records[i].job.output,job:records[i].job.id};
+        }
+        return record.updateTarget||null;
+    }
     function adopt(job,reference){
-        stopPlayer();
-        pending={job:job,layer:reference.layer,source:reference.source,comp:reference.comp,path:reference.path,project:reference.project,inserted:false};
+        stopPlayer();var target=updateTargetFor(reference);
+        pending={job:job,layer:reference.layer,source:reference.source,comp:reference.comp,path:reference.path,project:reference.project,inserted:false,
+            updateTarget:target,autoApply:!!(updateInPlace.value && target)};
         records.push(pending);remember();refreshQueue();update(job);
     }
     function finishing(){
@@ -512,7 +544,7 @@
         var selected=chosenLayer();
         if(selected.layer!==pending.layer || selected.comp!==pending.comp)throw new Error(t("Select the job's original layer."));
         var reference={layer:selected.layer,source:selected.source,comp:selected.comp,path:selected.source.file.fsName,project:app.project.file.fsName};
-        adopt(request("retry",{id:pending.job.id,changes:optionsFor(selected,!!pending.job.preview)}),reference);
+        adopt(request("retry",{id:pending.job.id,changes:optionsFor(selected,!!pending.job.preview)}),pending);
     });
     loadSettings.onClick=guarded(function(){
         if(!pending)throw new Error(t("Select a job first."));
@@ -701,7 +733,37 @@
     cancel.onClick = guarded(function () {
         if (pending) update(request("cancel", {id: pending.job.id}));
     });
-    function insertResult() {
+    function replaceInsertedResult(){
+        var target=pending.updateTarget,previous=null,layer=null;
+        for(var n=0;n<records.length;n++)if(records[n].job.id===target.job)previous=records[n];
+        for(var i=1;i<=pending.comp.numLayers;i++)if(pending.comp.layer(i).id===target.layer)layer=pending.comp.layer(i);
+        if(!previous || !layer || layer.locked || !layer.source || !layer.source.file || layer.source.file.fsName!==target.output)
+            throw new Error(t("The result layer changed or is locked. Disable in-place update to insert a new layer."));
+        var before=previous.job,after=pending.job;
+        if(before.frame_count!==after.frame_count || before.first_frame!==after.first_frame || Math.abs(before.native_fps-after.native_fps)>1e-6)
+            throw new Error(t("The processed range changed. Disable in-place update to insert a new layer."));
+        var footage=layer.source,uses=0;
+        for(var item=1;item<=app.project.numItems;item++){
+            var comp=app.project.item(item);if(!(comp instanceof CompItem))continue;
+            for(var li=1;li<=comp.numLayers;li++)if(comp.layer(li).source===footage)uses++;
+        }
+        if(uses!==1)throw new Error(t("This result media is shared. Disable in-place update to insert a new layer."));
+        var oldName=footage.name,oldRate=footage.frameRate||pending.source.frameRate,changed=false;
+        function interpret(job){app.run("file.interpretFootage",{items:[footage.id],alpha:"straight",frameRate:oldRate,colorProfile:"srgb",linearLight:!!job.sequence});}
+        app.beginUndoGroup(t("Insert CorridorKey"));
+        try{
+            app.run("file.replaceFootage",{item:footage.id,path:after.output,sequence:!!after.sequence});changed=true;
+            interpret(after);if(typeof oldName==="string")footage.name=oldName;
+        }catch(error){
+            if(changed){app.run("file.replaceFootage",{item:footage.id,path:target.output,sequence:!!before.sequence});interpret(before);if(typeof oldName==="string")footage.name=oldName;}
+            throw error;
+        }finally{app.endUndoGroup();}
+        for(var r=0;r<records.length;r++)if(records[r].comp===pending.comp && records[r].insertedLayer===layer.id)records[r].inserted=false;
+        pending.inserted=true;pending.insertedLayer=layer.id;pending.autoApply=false;
+        pending.updateTarget={layer:layer.id,output:after.output,job:after.id};
+        remember();refreshQueue();update(pending.job);status.text=t("Existing result updated. Layer settings are preserved.");
+    }
+    function insertResult(automatic) {
         if (!pending || pending.inserted) return;
         update(request("status", {id: pending.job.id}));
         if (pending.job.preview) throw new Error(t("Previews cannot be inserted. Run Remove background first."));
@@ -709,6 +771,10 @@
         if (!app.project.file || app.project.file.fsName !== pending.project ||
             app.project.itemByID(pending.comp.id) !== pending.comp)
             throw new Error(t("The original project was changed or reopened. Import the result manually."));
+        if(updateInPlace.value && pending.updateTarget){
+            if(!automatic){var activeTarget=updateTargetFor({comp:pending.comp,layer:pending.layer,insertedLayer:pending.updateTarget.layer});if(activeTarget)pending.updateTarget=activeTarget;}
+            replaceInsertedResult();return;
+        }
         var layer = pending.layer;
         if (layer.locked || layer.source !== pending.source || layer.source.file.fsName !== pending.path)
             throw new Error(t("The original layer was removed, locked or its source changed."));
@@ -874,7 +940,7 @@
                     var job;
                     try{job=request("status",{id:data.id});}catch(error){if(String(error.diagnostic||error.message).indexOf("Unknown job")>=0)continue;throw error;}
                     var record={job:job,comp:comp,layer:layer,source:source,path:data.path,project:data.project,
-                        inserted:!!data.inserted,insertedLayer:data.insertedLayer};
+                        inserted:!!data.inserted,insertedLayer:data.insertedLayer,updateTarget:data.updateTarget,autoApply:!!data.autoApply};
                     if(!record.inserted){
                         for(var q=1;q<=comp.numLayers;q++){
                             var existing=comp.layer(q),footage=existing.source;
@@ -939,16 +1005,22 @@
             if(queueChanged) refreshQueue();
             restoreFileTask();pollFiles();pollReview();
             if(ticks%5===1)updateStorage();
-            if (pending && pending.inserted && pending.insertedLayer !== undefined &&
-                app.project.file && app.project.file.fsName === pending.project &&
-                app.project.itemByID(pending.comp.id) === pending.comp) {
-                var found = false;
-                for (var l = 1; l <= pending.comp.numLayers; l++)
-                    if (pending.comp.layer(l).id === pending.insertedLayer) found = true;
-                if (!found) { pending.inserted = false; remember(); update(pending.job); }
+            if(pending && app.project.file && app.project.file.fsName===pending.project){
+                var reconciled=false;
+                for(var rr=0;rr<records.length;rr++){
+                    var record=records[rr];if(record.project!==pending.project || record.insertedLayer===undefined)continue;
+                    var current=resultLayer(record),actual=!!(current && current.source && current.source.file && current.source.file.fsName===record.job.output);
+                    if(record.inserted!==actual){record.inserted=actual;reconciled=true;}
+                }
+                if(reconciled){remember();refreshQueue();update(pending.job);}
             }
             if (pending && !terminal(pending.job))
                 { update(request("status", {id: pending.job.id})); refreshQueue(); }
+            if(pending && pending.autoApply && pending.job.state==="completed" && !pending.job.preview){
+                pending.autoApply=false;
+                if(updateInPlace.value){try{insertResult(true);}catch(applyError){status.text=t("Notice: ")+applyError.message;details.text+="\n"+applyError.message;}}
+                remember();
+            }
         } catch (error) {
             if (String(error.diagnostic||error.message).indexOf("Unknown job") >= 0) {
                 if (pending) {

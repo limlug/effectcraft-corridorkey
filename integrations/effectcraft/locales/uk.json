@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: зайнято {used}/{total} МБ; вільно {free} МБ",
   "Frame {frame} / {count}": "Кадр {frame} / {count}",
   "Source changed; inspect reference again.": "Джерело змінено; перевірте опорний кадр знову.",
-  "Use layer masks": "Використовувати маски шару"
+  "Use layer masks": "Використовувати маски шару",
+  "Update inserted result in place": "Оновлювати вставлений результат на місці",
+  "Existing result updated. Layer settings are preserved.": "Результат оновлено. Налаштування шару збережено.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "Шар змінено або заблоковано. Вимкніть оновлення на місці для вставлення нового шару.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "Оброблений діапазон змінено. Вимкніть оновлення на місці для нового шару.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "Цей результат використовується в кількох місцях. Вимкніть оновлення на місці для нового шару."
 }

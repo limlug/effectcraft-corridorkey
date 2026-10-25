@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}：已用 {used}/{total} MB；可用 {free} MB",
   "Frame {frame} / {count}": "影格 {frame} / {count}",
   "Source changed; inspect reference again.": "來源已變更；請重新檢查參考影格。",
-  "Use layer masks": "使用圖層遮罩"
+  "Use layer masks": "使用圖層遮罩",
+  "Update inserted result in place": "原位更新已插入的結果",
+  "Existing result updated. Layer settings are preserved.": "已更新現有結果。圖層設定維持不變。",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "結果圖層已變更或鎖定。請關閉原位更新以插入新圖層。",
+  "The processed range changed. Disable in-place update to insert a new layer.": "處理範圍已變更。請關閉原位更新以插入新圖層。",
+  "This result media is shared. Disable in-place update to insert a new layer.": "此結果媒體被多處使用。請關閉原位更新以插入新圖層。"
 }

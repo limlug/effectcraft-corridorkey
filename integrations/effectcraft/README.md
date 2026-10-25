@@ -5,6 +5,15 @@ lokal mit CorridorKey auf einer NVIDIA-Grafikkarte. Das Original bleibt im Proje
 Ergebnisse werden als eigene Ebenen eingefügt. Unter EffectCraft 0.16.0 auf Linux
 mit echter CUDA-Inferenz geprüft.
 
+## Direkte Aktualisierung bereits eingefügter Ergebnisse
+
+Unter **Kanten** ist „Eingefügtes Ergebnis direkt aktualisieren“ standardmäßig aktiv.
+Weitere Korrekturen aktualisieren nach Fertigstellung die vorhandene Freistellung,
+ohne zusätzliche Ebenen. Ebenen-ID, eigene Animationen/Effekte und Timing bleiben
+erhalten; Undo macht das Update rückgängig. Gemeinsame Medien, gesperrte Ebenen
+oder geänderte Quellbildbereiche werden geschützt. Die Option ausschalten, um
+wie bisher eine zusätzliche Variante einzufügen.
+
 ## Externer Wrapper 0.6
 
 Diese Fassung startet die unveränderte originale CorridorKey-Kommandozeile als

@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: {used}/{total} MB usados; {free} MB libres",
   "Frame {frame} / {count}": "Fotograma {frame} / {count}",
   "Source changed; inspect reference again.": "La fuente cambió; revisa la referencia.",
-  "Use layer masks": "Usar máscaras de capa"
+  "Use layer masks": "Usar máscaras de capa",
+  "Update inserted result in place": "Actualizar el resultado insertado en su lugar",
+  "Existing result updated. Layer settings are preserved.": "Resultado existente actualizado. Se conservan los ajustes de capa.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "La capa cambió o está bloqueada. Desactiva la actualización en su lugar para insertar otra.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "El intervalo procesado cambió. Desactiva la actualización en su lugar para insertar otra capa.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "Este medio se usa varias veces. Desactiva la actualización en su lugar para insertar otra capa."
 }

@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: {used}/{total} MB used; {free} MB free",
   "Frame {frame} / {count}": "Frame {frame} / {count}",
   "Source changed; inspect reference again.": "Source changed; inspect reference again.",
-  "Use layer masks": "Use layer masks"
+  "Use layer masks": "Use layer masks",
+  "Update inserted result in place": "Update inserted result in place",
+  "Existing result updated. Layer settings are preserved.": "Existing result updated. Layer settings are preserved.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "The result layer changed or is locked. Disable in-place update to insert a new layer.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "The processed range changed. Disable in-place update to insert a new layer.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "This result media is shared. Disable in-place update to insert a new layer."
 }

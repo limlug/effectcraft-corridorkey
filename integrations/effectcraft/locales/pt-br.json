@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: {used}/{total} MB usados; {free} MB livres",
   "Frame {frame} / {count}": "Quadro {frame} / {count}",
   "Source changed; inspect reference again.": "A fonte mudou; revise a referência.",
-  "Use layer masks": "Usar máscaras da camada"
+  "Use layer masks": "Usar máscaras da camada",
+  "Update inserted result in place": "Atualizar o resultado inserido no lugar",
+  "Existing result updated. Layer settings are preserved.": "Resultado existente atualizado. Os ajustes da camada foram preservados.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "A camada mudou ou está bloqueada. Desative a atualização no lugar para inserir outra.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "O intervalo processado mudou. Desative a atualização no lugar para inserir outra camada.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "Esta mídia é compartilhada. Desative a atualização no lugar para inserir outra camada."
 }

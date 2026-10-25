@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: 使用 {used}/{total} MB、空き {free} MB",
   "Frame {frame} / {count}": "フレーム {frame} / {count}",
   "Source changed; inspect reference again.": "ソースが変更されました。参照を再確認してください。",
-  "Use layer masks": "レイヤーマスクを使用"
+  "Use layer masks": "レイヤーマスクを使用",
+  "Update inserted result in place": "挿入済みの結果をその場で更新",
+  "Existing result updated. Layer settings are preserved.": "既存の結果を更新しました。レイヤー設定は保持されます。",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "結果レイヤーが変更またはロックされています。新規挿入するにはその場での更新を無効にしてください。",
+  "The processed range changed. Disable in-place update to insert a new layer.": "処理範囲が変更されています。新規レイヤーを挿入するにはその場での更新を無効にしてください。",
+  "This result media is shared. Disable in-place update to insert a new layer.": "この結果メディアは共有されています。新規挿入するにはその場での更新を無効にしてください。"
 }

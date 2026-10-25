@@ -34,10 +34,10 @@ function setup(options = {}) {
     comp.selectedLayers = [layer]; comp.layer = () => layer;
     const footage = {id: 3, remove() { this.removed = true; }};
     const project = {activeItem: comp, file: {fsName: '/project.ecproj'},
-        itemByID() { return comp; }, importFile() { return footage; }};
+        numItems:1,item(){return comp;},itemByID() { return comp; }, importFile(options) { footage.file=options.file;return footage; }};
     let groups = 0, cancelled = false;
     const app = {project, beginUndoGroup() { groups++; }, endUndoGroup() { groups--; },
-        run(id, params) { commands.push({id, params}); if(id==="prefs.get" && params.key==="general.language")return options.language||"de"; if(id==="prefs.pages" && options.hostLanguages)return [{key:"general.language",options:options.hostLanguages.map(value=>({value}))}]; },
+        run(id, params) { commands.push({id, params});if(id==='file.replaceFootage'){footage.file={fsName:params.path};return;} if(id==="prefs.get" && params.key==="general.language")return options.language||"de"; if(id==="prefs.pages" && options.hostLanguages)return [{key:"general.language",options:options.hostLanguages.map(value=>({value}))}]; },
         settings: {haveSetting(sec, key) { return key in store; }, getSetting(sec, key) { return store[key]; },
             saveSetting(sec, key, value) { store[key] = value; }},
         scheduleTask() { return 1; }, cancelTask() { cancelled = true; }};
@@ -315,5 +315,48 @@ test('detail review uses exact frame indices and comparison slider without submi
 test('new panel refuses a service without review capabilities',()=>{
  const s=setup({respond(r){if(r.method==='hello')return {api:1,backend:'stock-cli',version:'0.6.0'};}});
  assert.equal(s.get('start').enabled,false);
+});
+function insertedCorrectionFixture(){
+ const s=setup({respond(r){if(r.method==='refine')return {id:'job2',state:'queued',log:'/out/log2'};}});
+ s.copy.id=43;s.comp.numLayers=2;s.comp.layer=i=>i===1?s.copy:s.layer;
+ s.get('start').onClick();s.setJob({state:'completed',can_refine:true,first_frame:0,frame_count:12,native_fps:24});s.get('insert').onClick();
+ s.footage.frameRate=24000/1001;s.copy.name='My graded subject';s.copy.position=[321,123];s.copy.comment='keep my changes';
+ s.completeCorrection=()=>{s.setJob({id:'job2',state:'completed',output:'/out/new.mov',first_frame:0,frame_count:12,native_fps:24,can_refine:true,refine_of:'job1'});s.tick();};
+ return s;
+}
+test('a cached correction updates the same layer automatically and preserves edits',()=>{
+ const s=insertedCorrectionFixture();s.get('refine').onClick();s.completeCorrection();
+ const replacements=s.commands.filter(c=>c.id==='file.replaceFootage');assert.equal(replacements.length,1);assert.equal(replacements[0].params.path,'/out/new.mov');
+ assert.equal(s.comp.numLayers,2);assert.equal(s.copy.id,43);assert.equal(s.copy.name,'My graded subject');assert.equal(s.copy.comment,'keep my changes');assert.deepEqual(s.copy.position,[321,123]);
+ assert.equal(s.get('insert').enabled,false);assert.equal(s.groups,0);
+ assert.equal(s.commands.filter(c=>c.id==='file.interpretFootage').at(-1).params.frameRate,24000/1001);
+ const records=JSON.parse(s.store.records);assert.equal(records[0].inserted,false);assert.equal(records[1].insertedLayer,43);assert.equal(records[1].inserted,true);
+});
+test('undo of in-place replacement can be reapplied without a new inference or layer',()=>{
+ const s=insertedCorrectionFixture();s.get('refine').onClick();s.completeCorrection();
+ s.footage.file={fsName:'/out/cutout.mov'};s.tick();assert.equal(s.get('insert').enabled,true);
+ s.get('insert').onClick();assert.equal(s.footage.file.fsName,'/out/new.mov');assert.equal(s.comp.numLayers,2);
+ assert.equal(s.requests.filter(r=>r.method==='refine').length,1);assert.equal(s.requests.filter(r=>r.method==='submit').length,1);
+});
+test('in-place opt-out leaves a completed correction awaiting explicit insertion',()=>{
+ const s=insertedCorrectionFixture();s.get('updateInPlace').value=false;s.get('refine').onClick();s.completeCorrection();
+ assert.equal(s.commands.filter(c=>c.id==='file.replaceFootage').length,0);assert.equal(s.footage.file.fsName,'/out/cutout.mov');assert.equal(s.get('insert').enabled,true);
+});
+test('locked or shared result media are not overwritten by automatic corrections',()=>{
+ for(const mode of ['locked','shared']){
+  const s=insertedCorrectionFixture();s.get('refine').onClick();
+  if(mode==='locked')s.copy.locked=true;
+  else {const other=new s.comp.constructor();other.numLayers=1;other.layer=()=>({source:s.footage});s.app.project.numItems=2;s.app.project.item=i=>i===1?s.comp:other;}
+  s.completeCorrection();assert.equal(s.commands.filter(c=>c.id==='file.replaceFootage').length,0);assert.equal(s.footage.file.fsName,'/out/cutout.mov');assert.equal(s.get('insert').enabled,true);assert.match(s.get('connection').text,/Verbunden/);
+ }
+});
+test('failed footage interpretation restores the previous media and closes the undo group',()=>{
+ const s=insertedCorrectionFixture();const original=s.app.run;let fail=true;
+ s.app.run=function(id,params){if(id==='file.interpretFootage' && fail){fail=false;throw new Error('interpret failed');}return original.call(this,id,params);};
+ s.get('refine').onClick();s.completeCorrection();assert.equal(s.footage.file.fsName,'/out/cutout.mov');assert.equal(s.groups,0);assert.equal(s.get('insert').enabled,true);
+});
+test('selecting a cutout never reprocesses its already keyed media',()=>{
+ const s=insertedCorrectionFixture();s.comp.selectedLayers=[s.copy];s.get('start').onClick();
+ assert.equal(s.requests.filter(r=>r.method==='submit').at(-1).params.input,'/shot.mp4');
 });
 console.log(tests + ' panel checks passed');

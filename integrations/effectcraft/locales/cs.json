@@ -257,5 +257,10 @@
   "{name}: {used}/{total} MB used; {free} MB free": "{name}: využito {used}/{total} MB; volno {free} MB",
   "Frame {frame} / {count}": "Snímek {frame} / {count}",
   "Source changed; inspect reference again.": "Zdroj se změnil; zkontrolujte referenci znovu.",
-  "Use layer masks": "Použít masky vrstvy"
+  "Use layer masks": "Použít masky vrstvy",
+  "Update inserted result in place": "Aktualizovat vložený výsledek na místě",
+  "Existing result updated. Layer settings are preserved.": "Stávající výsledek aktualizován. Nastavení vrstvy zůstává zachováno.",
+  "The result layer changed or is locked. Disable in-place update to insert a new layer.": "Výsledná vrstva se změnila nebo je zamčená. Pro novou vrstvu vypněte aktualizaci na místě.",
+  "The processed range changed. Disable in-place update to insert a new layer.": "Zpracovaný rozsah se změnil. Pro novou vrstvu vypněte aktualizaci na místě.",
+  "This result media is shared. Disable in-place update to insert a new layer.": "Toto médium se používá vícekrát. Pro novou vrstvu vypněte aktualizaci na místě."
 }

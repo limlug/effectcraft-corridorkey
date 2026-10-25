@@ -61,3 +61,9 @@ Ein Referenzbild nach dem Bereichsanfang benötigt eine passende Startmaske und 
 Unter **Clip** lassen sich Grün, Blau oder keine zusätzliche Saumkorrektur wählen. Unter **Kanten** können deckender Kern und weiche Randabdeckung getrennt korrigiert werden. Im Tab **Service** bleibt das Zeitfenster standardmäßig automatisch. Manuelle Fenster sind keine direkte Kopie des Vorwärts-/Rückwärts-Reglers aus dem offiziellen Plugin und garantieren keine bestimmte Qualitätsverbesserung. GPU-Werte beziehen sich auf den gesamten Speicherverbrauch aller Anwendungen.
 
 Nach einem Update laufende Aufträge beenden und den alten lokalen Dienst schließen, dann den Installer erneut ausführen und über den gemeinsamen Starter öffnen. Das neue Panel verlangt einen Dienst mit Unterstützung für die neuen Funktionen.
+
+## Freistellung direkt weiterbearbeiten
+
+Unter **Kanten** ist „Eingefügtes Ergebnis direkt aktualisieren“ standardmäßig aktiv. Das erste Ergebnis wird wie bisher eingefügt. Danach Kanten oder Farbsäume ändern und „Korrektur ohne neue KI ausgeben“ wählen: Nach der Berechnung aktualisiert sich die vorhandene Freistellung automatisch. Es entsteht keine zusätzliche Ebene. Ebenenname, Animationen, Effekte, Masken und Timing bleiben bestehen. Rückgängig macht die Aktualisierung rückgängig; erneutes Einfügen wendet dieselbe fertige Korrektur wieder an.
+
+Wurde die Ergebnisebene gesperrt, ihre Quelle ausgetauscht oder ihr Medium mehrfach verwendet, überschreibt das Plugin sie nicht. Auch ein anderer verarbeiteter Zeitbereich benötigt eine neue Ebene. Dafür die direkte Aktualisierung ausschalten. Das Originalmaterial und die fertigen Dateien werden nicht überschrieben.

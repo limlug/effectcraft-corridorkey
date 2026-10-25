@@ -17,3 +17,7 @@ corridorkey-launcher.json
 *.mp4
 *.exr
 *.zip
+
+# Local installation may reuse these directories through symlinks.
+/venv
+/out_effectcraft

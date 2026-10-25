@@ -31,3 +31,9 @@ Automatic leaves the upstream memory/window choice intact. Manual windows map to
 ## Updating
 
 Finish/cancel active jobs, close the previous local service, pull/extract this source and rerun setup_effectcraft.py. Relaunch with the shared starter. A 0.7 panel refuses a bridge without the new review capability; the launcher does not silently reuse a 0.6 bridge. Existing outputs and cached jobs remain readable with default values for new settings.
+
+## In-place corrections (development update)
+
+Edges → Update inserted result in place is enabled by default. The first result is inserted explicitly. Later cached corrections or reruns for an already inserted result automatically retarget that result's existing generated FootageItem when finished, without adding layers or project items. Selecting a linked cutout still processes its original input. Existing layer ID, name, position, animation, effects, masks, parenting, timing and original-audio handling stay intact because the layer itself is not rebuilt. The output media must retain its source-frame range/count/rate; the existing interpretation rate is preserved. The update has its own Undo group. Undo/redo reconciles record state against the actual file, and an undone correction can be reapplied without another AI run.
+
+The captured target path is rechecked before an automatic update. Missing/locked/manually retargeted layers, changed processed ranges, or media shared by multiple layers are refused. Uncheck the option to explicitly insert another result layer using the previous behavior. Background failures leave the previously inserted media intact. A failed interpretation attempts to restore the previous generated file; files on disk are never overwritten. Completed render variants remain available for comparison. Updates apply only in the recorded original project; opening another project does not redirect them.
