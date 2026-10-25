@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a reproducible installation or panel problem
+body:
+  - type: markdown
+    attributes:
+      value: Remove tokens, private media paths and confidential project details. Do not attach model weights.
+  - type: input
+    id: version
+    attributes:
+      label: Add-on version and EffectCraft version
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: OS, Python version, GPU and driver
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps, expected result and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics and prerequisite check
+      render: text

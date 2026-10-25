@@ -1,0 +1,19 @@
+name: Translation correction
+description: Improve a panel translation or report a layout problem
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Language and add-on version
+    validations:
+      required: true
+  - type: textarea
+    id: wording
+    attributes:
+      label: Existing text, suggested wording and where it appears
+    validations:
+      required: true
+  - type: textarea
+    id: rendering
+    attributes:
+      label: Optional layout or font details

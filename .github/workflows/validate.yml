@@ -1,0 +1,44 @@
+name: Validate add-on
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Standard-library bridge and localization tests
+        run: python -m unittest discover -s integrations/effectcraft -p 'test_*.py' -v
+      - name: Installer contracts
+        run: python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Panel workflow tests in all languages
+        run: node integrations/effectcraft/test_panel.cjs
+      - name: Build self-contained panel
+        run: python integrations/effectcraft/build_panel.py CorridorKey.jsx
+      - name: Check setup plan without downloads
+        run: python setup_effectcraft.py --dry-run --effectcraft EffectCraft
+  upstream-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test stock CLI boundary
+        run: python -m unittest discover -s integrations/effectcraft -p 'test_wrapper.py' -v
+      - name: Fetch original source without patches or models
+        run: |
+          git clone --no-checkout https://github.com/nikopueringer/CorridorKey2.0.git runtime/CorridorKey2.0
+          git -C runtime/CorridorKey2.0 checkout --detach 485f5e9ab759ead6138cc990776184b59d6ea971
+          git -C runtime/CorridorKey2.0 diff --exit-code HEAD
