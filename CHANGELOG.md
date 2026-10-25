@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0-rc1 — quality of life
+
+- Exact-frame detail review, crop zoom, comparison split and selectable/custom review backgrounds.
+- Completed-result A/B bookmarks and correction-chain return to original.
+- Green/Blue/Off spill, independent core/edge coverage and preset persistence.
+- Reference inspection, rough colour-seeded selection, combined layer-mask snapshots.
+- Optional reference frame through separate original-CLI forward/reversed passes, with disk-backed reversal.
+- GPU-memory refresh and public-CLI temporal-window controls.
+- New numerical/frame-order workflows in CI; new text in all twelve provisional catalogs.
+
+
 ## 0.6.0 — external-wrapper candidate
 
 - Removes runtime patches and all CorridorKey Python imports from wrapper code.

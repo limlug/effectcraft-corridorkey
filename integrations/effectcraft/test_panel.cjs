@@ -45,7 +45,7 @@ function setup(options = {}) {
         open() { return options.online !== false; }
         writeln(line) { this.req = JSON.parse(line); requests.push(this.req); return true; }
         readln() { if(options.respond){const value=options.respond(this.req);if(value!==undefined)return JSON.stringify({ok:true,result:value});} return JSON.stringify(options.unknownJob && this.req.method === 'status' ?
-            {ok: false, error: 'Unknown job'} : {ok: true, result: this.req.method === 'hello' ? {api: 1,backend:'stock-cli'} : this.req.method === 'queue' ? [] : this.req.method === 'submit_batch' ? this.req.params.items.map((p,i)=>({...job,id:'job'+i,context:p.context})) : job}); }
+            {ok: false, error: 'Unknown job'} : {ok: true, result: this.req.method === 'hello' ? {api: 1,backend:'stock-cli',review_api:1} : this.req.method === 'queue' ? [] : this.req.method === 'submit_batch' ? this.req.params.items.map((p,i)=>({...job,id:'job'+i,context:p.context})) : job}); }
         close() {}
     }
     class File {
@@ -279,5 +279,41 @@ test('stock CLI backend never silently connects to the old patched backend',()=>
  const s=setup({respond(r){if(r.method==='hello')return {api:1,version:'0.5.0'};}});
  assert.equal(s.get('start').enabled,false);
  assert.equal(s.get('status').text.includes(catalogs.de['Unsupported service version.']),true);
+});
+test('new finishing settings and temporal presets reach the worker and survive presets',()=>{
+ const s=setup();s.get('spillColor').selection=1;s.get('coreStrength').text='40';s.get('edgeStrength').text='85';s.get('temporal').selection=3;
+ s.get('presetName').text='Blue edges';s.get('presetSave').onClick();
+ s.get('spillColor').selection=0;s.get('presets').selection=1;s.get('presets').onChange();
+ assert.equal(s.get('spillColor').selection.index,1);assert.equal(s.get('coreStrength').text,'40');
+ s.get('start').onClick();const p=s.requests.find(r=>r.method==='submit').params;
+ assert.equal(p.despill_color,'blue');assert.equal(p.core_strength,.4);assert.equal(p.edge_strength,.85);assert.equal(p.temporal_window,16);
+});
+test('reference assistant preserves absolute frame and connects the generated mask',()=>{
+ const s=setup({respond(r){
+  if(r.method==='mask.reference')return {id:'reference-task'};
+  if(r.method==='mask.select')return {id:'selection-task'};
+  if(r.method==='mask.points')return {id:'points-task'};
+  if(r.method==='task.status')return {state:'completed',result:{id:'reference-id',input:'/shot.mp4',frame:4,total:100,width:256,height:256,path:'/reference.png',hint:r.params.id==='selection-task'?'/generated.png':undefined}};
+ }});
+ s.get('referenceFrame').text='4';s.get('openReference').onClick();s.tick();
+ assert.equal(s.requests.find(r=>r.method==='mask.reference').params.frame,4);
+ s.get('pointX').text='30';s.get('pointY').text='70';s.get('addPoint').onClick();s.tick();s.get('buildSelection').onClick();s.tick();
+ const points=s.requests.find(r=>r.method==='mask.select').params.points;
+ assert.equal(points[0].x,.3);assert.equal(points[0].y,.7);assert.equal(points[0].keep,true);
+ assert.equal(s.get('hint').text,'/generated.png');assert.equal(s.get('referenceFrame').text,'4');
+ s.get('start').onClick();assert.equal(s.requests.find(r=>r.method==='submit').params.reference_frame,4);
+});
+test('detail review uses exact frame indices and comparison slider without submitting inference',()=>{
+ const s=setup({respond(r){if(r.method==='review.detail')return {id:'detail-task'};if(r.method==='task.status')return {state:'completed',result:{path:'/detail.png',frame:2,frames:10}};}});
+ s.get('start').onClick();s.setJob({state:'completed',frame_count:10});s.tick();
+ s.get('detailFrame').text='2';s.get('detailZoom').selection=2;s.get('detailBackground').selection=1;s.get('split').value=30;
+ s.get('inspect').onClick();s.tick();const p=s.requests.find(r=>r.method==='review.detail').params;
+ assert.equal(p.frame,2);assert.equal(p.zoom,4);assert.equal(p.split,.3);assert.equal(p.background,'white');
+ assert.equal(s.get('detailImage').image.path,'/detail.png');assert.equal(s.requests.filter(r=>r.method==='submit').length,1);
+ s.get('frameNext').onClick();assert.equal(s.requests.filter(r=>r.method==='review.detail').at(-1).params.frame,3);
+});
+test('new panel refuses a service without review capabilities',()=>{
+ const s=setup({respond(r){if(r.method==='hello')return {api:1,backend:'stock-cli',version:'0.6.0'};}});
+ assert.equal(s.get('start').enabled,false);
 });
 console.log(tests + ' panel checks passed');

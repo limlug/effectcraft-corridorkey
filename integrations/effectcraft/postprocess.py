@@ -10,7 +10,7 @@ import tempfile
 from processes import check_cancel
 
 os.environ['OPENCV_IO_ENABLE_OPENEXR']='1'
-FINISHING={'despill','matte_black','matte_white','matte_expand','matte_feather','output_format','exr_dtype','keep_warm'}
+FINISHING={'despill_color','core_strength','edge_strength','despill','matte_black','matte_white','matte_expand','matte_feather','output_format','exr_dtype','keep_warm'}
 
 
 def refine_alpha(alpha,black=0.,white=1.,expand=0,feather=0.):
@@ -34,13 +34,26 @@ def finish_pixels(raw,options,video):
     import numpy as np
     pixels=raw.astype(np.float32,copy=True)
     pixels[:,:,3]=refine_alpha(pixels[:,:,3],options['matte_black'],options['matte_white'],options['matte_expand'],options['matte_feather'])
+    # Preserve soft outer detail while filling only the eroded opaque core.
+    alpha=pixels[:,:,3]
+    edge=options.get('edge_strength',1.)
+    alpha[:]=np.clip(alpha*edge,0,1)
+    core=options.get('core_strength',0.)
+    if core:
+        import cv2
+        inside=cv2.erode(raw[:,:,3],np.ones((3,3),np.uint8))
+        fill=np.clip((inside-.8)/.2,0,1)*core
+        alpha[:]=np.maximum(alpha,fill)
     rgb=pixels[:,:,:3]
     if video:
         positive=np.maximum(rgb,0)
         rgb[:]=np.clip(np.where(positive<=.0031308,positive*12.92,1.055*positive**(1/2.4)-.055),0,1)
-    # Green-spill reduction is our independent channel operation.
-    excess=np.maximum(rgb[:,:,1]-(rgb[:,:,0]+rgb[:,:,2])*.5,0)
-    rgb[:,:,1]-=float(options['despill'])*excess
+    colour=options.get('despill_color','green')
+    if colour!='off':
+        channel=1 if colour=='green' else 0  # OpenCV BGRA
+        other=[i for i in range(3) if i!=channel]
+        excess=np.maximum(rgb[:,:,channel]-(rgb[:,:,other[0]]+rgb[:,:,other[1]])*.5,0)
+        rgb[:,:,channel]-=float(options['despill'])*excess
     return pixels
 
 

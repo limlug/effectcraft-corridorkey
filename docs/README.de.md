@@ -2,7 +2,7 @@
 
 Community-Add-on zur lokalen Greenscreen-Freistellung mit CorridorKey 2.0 auf einer NVIDIA-Grafikkarte. Die Oberfläche unterstützt alle elf Sprachen von EffectCraft 0.16. Georgisch ist als zwölfte Übersetzung für neuere Hosts vorbereitet.
 
-**Version 0.6.0 als Veröffentlichungskandidat. Linux geprüft; Windows experimentell.**
+**Version 0.7.0 als Veröffentlichungskandidat. Linux geprüft; Windows experimentell.**
 
 ## Installation
 
@@ -49,3 +49,15 @@ Die weiteren Funktionen und Einschränkungen stehen in der [Bedienungsanleitung]
 Unser eigener Wrapper-Code steht unter MIT. Das separat heruntergeladene CorridorKey und die Modelle behalten ihre eigenen Lizenzen und Nutzungsbedingungen. Das Add-on ist unabhängig vom offiziellen kostenpflichtigen CorridorKey-Plugin.
 
 Der Wrapper ruft die originale CorridorKey-Kommandozeile als eigenes Programm auf. Es gibt keine Runtime-Patches und keine Modellimporte in unserem Python-Code. Das Modell wird pro KI-Auftrag neu geladen; nachträgliche Korrekturen aus Bilddaten bleiben möglich. Diese technische Trennung bedeutet keine zugesicherte Ausnahme von Lizenzbedingungen. Siehe [Architektur](WRAPPER_ARCHITECTURE.md) und [Lizenzstatus](LICENSING.md).
+
+## Neue Komfortfunktionen in 0.7
+
+Im Tab **Detailprüfung** lassen sich einzelne Ausgabebilder, Vergrößerung, Prüfhintergrund und der Vorher/Nachher-Trennpunkt einstellen. A/B merkt fertige Ergebnisse; zuerst korrigieren und berechnen lassen, danach die jeweilige Variante merken. Ein Wechsel verändert das Projekt nicht; eingefügt wird weiterhin ausdrücklich.
+
+Der **Masken-Assistent** zeigt das tatsächliche Referenzbild. Die Bildnummer ist nullbasiert und bezieht sich auf die Quelldatei; leer bedeutet den Anfang des verarbeiteten Bereichs einschließlich Vorlauf. „Abspielkopf übernehmen“ rechnet die Timeline-Position um. Eine Bildmaske muss dieselben Pixelmaße haben. Für die grobe Farbauswahl verschiedene Farben des Motivs markieren, zum Beispiel Kleidung, Gesicht, Hände und Haare, und Grün/Blau als Entfernen markieren. Die Punkte erscheinen grün beziehungsweise rot. Die Auswahl vor der Berechnung prüfen und bei Bedarf weitere Punkte ergänzen. Sie wird automatisch als grobe Startmaske verwendet und ist keine semantische KI-Freistellung.
+
+Ein Referenzbild nach dem Bereichsanfang benötigt eine passende Startmaske und zwei KI-Durchläufe. Der Rückwärtslauf nutzt temporäre Bilddateien statt eines unbeschränkten RAM-Puffers. Das kostet zusätzliche Ladezeit und Speicherplatz. Ein Maskenvideo bleibt an den ursprünglichen Zeitablauf gebunden; dafür die Referenz automatisch lassen. Ebenenmasken werden am Referenzbild als Momentaufnahme kombiniert; animierte Masken werden nicht über die gesamte Aufnahme exportiert.
+
+Unter **Clip** lassen sich Grün, Blau oder keine zusätzliche Saumkorrektur wählen. Unter **Kanten** können deckender Kern und weiche Randabdeckung getrennt korrigiert werden. Im Tab **Service** bleibt das Zeitfenster standardmäßig automatisch. Manuelle Fenster sind keine direkte Kopie des Vorwärts-/Rückwärts-Reglers aus dem offiziellen Plugin und garantieren keine bestimmte Qualitätsverbesserung. GPU-Werte beziehen sich auf den gesamten Speicherverbrauch aller Anwendungen.
+
+Nach einem Update laufende Aufträge beenden und den alten lokalen Dienst schließen, dann den Installer erneut ausführen und über den gemeinsamen Starter öffnen. Das neue Panel verlangt einen Dienst mit Unterstützung für die neuen Funktionen.

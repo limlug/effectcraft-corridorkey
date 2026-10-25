@@ -4,7 +4,7 @@
 
 A community add-on that removes green-screen backgrounds inside [EffectCraft](https://github.com/storytold/effectcraft), using [CorridorKey 2.0](https://github.com/nikopueringer/CorridorKey2.0) locally on an NVIDIA GPU.
 
-**0.6.0 external-wrapper candidate · Linux tested · Windows experimental · NVIDIA CUDA required**
+**0.7.0 quality-of-life preview · Linux tested · Windows experimental · NVIDIA CUDA required**
 
 [Deutsch](docs/README.de.md) · [Complete installation](docs/INSTALL.md) · [User guide](integrations/effectcraft/README.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Languages](docs/LANGUAGES.md)
 
@@ -16,6 +16,19 @@ A community add-on that removes green-screen backgrounds inside [EffectCraft](ht
 - Plays and scrubs lightweight previews inside the panel, with original, matte, checkerboard and comparison views.
 - Saves presets, retries jobs, collects portable project packages and cleans disposable caches.
 - Provides all eleven languages in EffectCraft 0.16 and a Georgian catalog for newer hosts, selected automatically or manually.
+
+## New in 0.7
+
+- Exact-frame detail inspection, frame stepping, 1–16x crop zoom and a movable original/result comparison.
+- White, black, grey, checkerboard or your own image/video as a review background.
+- Green/blue/off spill correction and separate opaque-core/edge coverage controls.
+- A/B bookmarks for completed results and a return to the original result.
+- Reference-frame inspection, mask-size checks, coloured keep/remove seed markers and an optional local colour-based selection assistant. This is a rough GrabCut selection, not semantic AI segmentation or Resolve Magic Mask.
+- Up to sixteen Add/Subtract layer-mask snapshots at the chosen reference frame.
+- An optional reference anywhere inside the processed range, using original-CLI forward and reversed passes; an automatic range-start reference keeps the single-pass path.
+- Optional GPU-memory display and explicit temporal windows, alongside the upstream automatic setting.
+
+See [the new controls and their limits](docs/QUALITY_OF_LIFE.md). All new UI strings are included in the twelve catalogs; translations remain provisional.
 
 ## Before installing
 
@@ -54,7 +67,7 @@ py -3.12 setup_effectcraft.py --effectcraft "C:\Path\To\EffectCraft.exe"
 
 Enable EffectCraft's script file/network permission as above. See [complete installation](docs/INSTALL.md) for verification, manual setup, updates and removal.
 
-The separate CLI loads its model for every AI job. Cached corrections remain available, but the previous GPU warm mode is not offered. Temporary float EXR frames are required for each AI job.
+The separate CLI loads its model for every AI pass. A reference after the range start requires two passes and additional temporary disk space. Cached corrections remain available, but the previous GPU warm mode is not offered. Temporary float EXR frames are required for each AI job.
 
 ## Known limits
 

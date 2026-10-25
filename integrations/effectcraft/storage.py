@@ -41,7 +41,7 @@ class Storage:
         try:
             with self.jobs.lock:jobs=[dict(j) for j in self.jobs.jobs.values()]
             folders=[p for p in self.jobs.output_root.iterdir() if re.fullmatch('[0-9a-f]{32}',p.name) and p.is_dir() and not p.is_symlink()]
-            total=sum(size(p) for p in folders)
+            total=sum(size(p) for p in folders)+size(self.jobs.output_root/'_review')
             roots={Path(j['cache_dir']) for j in jobs if j.get('cache_dir')} | {p/'cache' for p in folders if (p/'cache').is_dir()}
             corrections=sum(size(p) for p in roots)
             previews=sum(size(p/'playback') for p in folders)

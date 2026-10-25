@@ -1,4 +1,4 @@
-# 0.6.0 candidate release checklist
+# 0.7.0 prerelease release checklist
 
 ## Prepared
 
@@ -16,9 +16,9 @@
 
 ## Before publishing a prerelease
 
-- [x] CI success confirmed for the reviewed source; recheck after changes
+- [x] Linux/Windows and image-workflow CI configured; publishing requires a successful run for the release commit
 - [x] Final source archive, checksum and release notes reviewed
-- [ ] Authorize public visibility and publishing; repository remains private during preparation
+- [x] User authorized deploying the tested new version to GitHub; preserve current repository visibility
 
 ## Remaining validation (disclosed prerelease limitations)
 

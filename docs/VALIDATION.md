@@ -2,7 +2,7 @@
 
 ## Automated contracts
 
-The release candidate is checked with the bridge/localization Python suite, the installer contract suite, and 42 Node panel workflow checks. The panel suite exercises all twelve catalogs; keys, values, placeholder sets and UTF-8 integrity are checked separately. Tests also cover automatic language choice, system-locale aliases, manual override persistence, user names containing multiple scripts and recovery from localized service errors.
+The release candidate is checked with the bridge/localization Python suite, the installer contract suite, and 46 Node panel workflow checks. The panel suite exercises all twelve catalogs; keys, values, placeholder sets and UTF-8 integrity are checked separately. Tests also cover automatic language choice, system-locale aliases, manual override persistence, user names containing multiple scripts and recovery from localized service errors.
 
 GPU-independent tests cover queue/retry/correction metadata, manifest recovery, cancellation, portable-package path containment, verified copying and cleanup protection. Numerical matte/mask/writer tests require the runtime dependencies and are skipped by the standard-library-only CI job.
 
@@ -28,3 +28,9 @@ The current candidate must retain prerelease/experimental labels. Do not present
 ## 0.6 external CLI verification
 
 The new architecture has 40 bridge/localization/wrapper Python tests, 42 Node panel tests and 5 installer contracts. Numerical finishing tests use NumPy/OpenCV without importing CorridorKey. A real GPU test used an unmodified checkout at the recorded commit and local model-file links. Original CLI inference produced two test frames; the wrapper exported MOV and applied cached corrections plus half/float EXR without another AI run. The upstream tracked source remained unchanged. This does not establish complete Windows/native-host or long-clip quality validation for the new architecture.
+
+## 0.7 quality-of-life verification
+
+The expanded suite includes 49 bridge/localization/wrapper/image tests, 46 Node panel checks and 5 installer contracts (100 checks total). A numerical CI job installs the tested NumPy/OpenCV versions and FFmpeg, so synthetic selection, mask combination, colour/core/edge behavior, exact-frame inspection and bidirectional ordering run without skipped image dependencies. A standalone external-program fixture decodes numbered real frames and proves the forward/reversed merge preserves order and omits the duplicate reference.
+
+On Linux, a three-frame 1280×720 sample from the existing project clip exercised a middle reference, both original-CLI passes, cached finishing, MOV and half/float EXR. The source checkout stayed unchanged. Native EffectCraft 0.16 checks exercised detail review, A/B/original, reference inspection and point selection, plus GPU status, with the test project unchanged. Colour selection was visually checked and revised after a poor foreground initialization was found; authored points for separate subject colours are required. These short workflow samples are not a quantitative quality benchmark or proof of long-shot temporal quality.

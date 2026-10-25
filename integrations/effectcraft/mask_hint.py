@@ -49,3 +49,35 @@ def rasterize(mask, path):
     pixels=np.round(pixels*(mask['opacity']/100)).astype('uint8')
     if not cv2.imwrite(str(path),pixels):raise RuntimeError('Startmaske konnte nicht gespeichert werden')
     return str(path)
+
+
+def validate_stack(stack):
+    if not isinstance(stack,list) or not 1<=len(stack)<=16:raise ValueError('Use 1 to 16 masks')
+    dimensions=None
+    for entry in stack:
+        if not isinstance(entry,dict) or set(entry)!={'mode','mask'} or entry['mode'] not in ('keep','remove'):raise ValueError('Invalid mask mode')
+        validate_mask(entry['mask'])
+        size=(entry['mask']['width'],entry['mask']['height'])
+        if dimensions is not None and size!=dimensions:raise ValueError('Mask sizes differ')
+        dimensions=size
+    return stack
+
+
+def rasterize_stack(stack,path):
+    import cv2
+    import numpy as np
+    import tempfile
+    from pathlib import Path
+    validate_stack(stack)
+    shape=(int(stack[0]['mask']['height']),int(stack[0]['mask']['width']))
+    keep=np.zeros(shape,np.float32) if any(e['mode']=='keep' for e in stack) else np.ones(shape,np.float32)
+    remove=np.zeros(shape,np.float32)
+    with tempfile.TemporaryDirectory() as folder:
+        for i,entry in enumerate(stack):
+            target=Path(folder)/f'{i}.png';rasterize(entry['mask'],target)
+            image=cv2.imread(str(target),cv2.IMREAD_GRAYSCALE).astype(np.float32)/255
+            if entry['mode']=='keep':keep=np.maximum(keep,image)
+            else:remove=np.maximum(remove,image)
+    result=np.round(keep*(1-remove)*255).astype(np.uint8)
+    if not cv2.imwrite(str(path),result):raise OSError('Cannot write mask')
+    return str(path)

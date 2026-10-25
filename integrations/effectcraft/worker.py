@@ -33,10 +33,28 @@ def probe(path):
     return fps, int(total), int(stream['width']), int(stream['height'])
 
 
-def crop(source, target, first, last, cancel):
-    command(['ffmpeg', '-v', 'error', '-y', '-i', str(source), '-an', '-vf',
-        f'trim=start_frame={first}:end_frame={last},setpts=PTS-STARTPTS',
-        '-c:v', 'ffv1', '-pix_fmt', 'bgr0', '-threads', '2', str(target)], cancel)
+def crop(source, target, first, last, cancel, reverse=False):
+    if reverse:
+        # Disk-backed reversal avoids FFmpeg's whole-clip reverse RAM buffer.
+        import shutil
+        import tempfile
+        fps,total,width,height=probe(source)
+        if shutil.disk_usage(Path(target).parent).free < width*height*4*(last-first)+64*1024*1024:
+            raise OSError('Not enough disk space for reference reversal')
+        with tempfile.TemporaryDirectory(prefix='reverse-',dir=Path(target).parent) as folder:
+            folder=Path(folder)
+            command(['ffmpeg','-v','error','-y','-i',str(source),'-an','-vf',
+                f'trim=start_frame={first}:end_frame={last},setpts=PTS-STARTPTS',
+                '-vsync','0','-threads','2',str(folder/'frame_%09d.png')],cancel)
+            frames=sorted(folder.glob('frame_*.png'))
+            if len(frames)!=last-first:raise ValueError('Reference reversal frame count mismatch')
+            for index,path in enumerate(reversed(frames)):path.rename(folder/f'reverse_{index:09d}.png')
+            command(['ffmpeg','-v','error','-y','-framerate',str(fps),'-i',str(folder/'reverse_%09d.png'),
+                '-an','-c:v','ffv1','-pix_fmt','bgr0','-threads','2',str(target)],cancel)
+    else:
+        command(['ffmpeg', '-v', 'error', '-y', '-i', str(source), '-an', '-vf',
+            f'trim=start_frame={first}:end_frame={last},setpts=PTS-STARTPTS',
+            '-c:v', 'ffv1', '-pix_fmt', 'bgr0', '-threads', '2', str(target)], cancel)
     return str(target)
 
 
@@ -93,6 +111,8 @@ def main():
     for line in sys.stdin:
         spec=json.loads(line)['spec'];folder=Path(spec['folder']);options=spec['options']
         options.setdefault('keep_cache',True)
+        options.setdefault('mask_stack',None)
+        options.setdefault('reference_frame',None)
         cancel=folder/'cancel';reply={}
         with open(folder/'inference.log','a',buffering=1,encoding='utf-8') as log,contextlib.redirect_stdout(log),contextlib.redirect_stderr(log):
             try:
@@ -115,11 +135,31 @@ def main():
                         if abs(hf-fps)>.001 or hn!=total:raise ValueError('Mask video must match source frame rate and count')
                         if first or last!=total:hint=crop(hint,folder/'hint-range.mkv',first,last,cancel)
                     initial=options['hint'] or None
+                    if options['mask_stack'] is not None:
+                        from mask_hint import rasterize_stack
+                        initial=rasterize_stack(options['mask_stack'],folder/'layer-mask.png')
                     if options['layer_mask'] is not None:
                         from mask_hint import rasterize
                         initial=rasterize(options['layer_mask'],folder/'layer-mask.png')
-                    command(arguments(root,source,folder,options,initial,hint),cancel);loads+=1
-                    raw=sorted((folder/'prediction').glob('*_cutout_exr/*.exr'))
+                    reference=first if options['reference_frame'] is None else options['reference_frame']
+                    if not first<=reference<last:raise ValueError('Reference frame outside processed range')
+                    if hint and reference!=first:raise ValueError('Mask video uses the original frame alignment; leave reference automatic')
+                    if reference!=first and not initial:raise ValueError('Select a starting mask for the chosen reference frame')
+                    if reference==first:
+                        command(arguments(root,source,folder,options,initial,hint),cancel);loads+=1
+                        raw=sorted((folder/'prediction').glob('*_cutout_exr/*.exr'))
+                    else:
+                        # Run the original CLI from the reference in both directions.
+                        # Reverse decoded images only; timeline/output order remains original.
+                        forward=folder/'forward';backward=folder/'backward';forward.mkdir();backward.mkdir()
+                        fs=crop(options['input'],folder/'forward.mkv',reference,last,cancel)
+                        bs=crop(options['input'],folder/'backward.mkv',first,reference+1,cancel,reverse=True)
+                        command(arguments(root,fs,forward,options,initial,None),cancel);loads+=1
+                        command(arguments(root,bs,backward,options,initial,None),cancel);loads+=1
+                        front=sorted((forward/'prediction').glob('*_cutout_exr/*.exr'))
+                        back=sorted((backward/'prediction').glob('*_cutout_exr/*.exr'))
+                        if len(front)!=last-reference or len(back)!=reference-first+1:raise RuntimeError('Reference passes returned wrong frame count')
+                        raw=list(reversed(back))[:-1]+front
                     if len(raw)!=last-first:raise RuntimeError('Original CLI did not produce the expected frame count')
                     cache=folder/'cache';cache.mkdir(exist_ok=True)
                     for index,path in enumerate(raw):path.rename(cache/f'raw_{index:06d}.exr')
@@ -133,8 +173,8 @@ def main():
             except Exception as error:
                 traceback.print_exc();reply=dict(ok=False,error=str(error))
             finally:
-                for name in ('range.mkv','hint-range.mkv'):(folder/name).unlink(missing_ok=True)
-                for name in ('temp','prediction'):shutil.rmtree(folder/name,ignore_errors=True)
+                for name in ('range.mkv','hint-range.mkv','forward.mkv','backward.mkv'):(folder/name).unlink(missing_ok=True)
+                for name in ('temp','prediction','forward','backward'):shutil.rmtree(folder/name,ignore_errors=True)
                 if not reply.get('ok'):shutil.rmtree(folder/'cache',ignore_errors=True)
         reply.update(resident=False,model_loads=loads,worker_pid=os.getpid())
         print(json.dumps(reply),flush=True)

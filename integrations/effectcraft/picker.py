@@ -17,7 +17,7 @@ class Picker:
 
     def start(self, kind, language="en"):
         if language not in LANGUAGES: raise ValueError('Unsupported language')
-        if kind not in ('image', 'video', 'folder'): raise ValueError('Ungültige Dateiauswahl')
+        if kind not in ('image', 'video', 'media', 'folder'): raise ValueError('Ungültige Dateiauswahl')
         with self.lock:
             if any(r['state'] == 'pending' for r in self.requests.values()): raise ValueError('Eine Dateiauswahl ist bereits geöffnet')
             identity = uuid.uuid4().hex
@@ -28,8 +28,9 @@ class Picker:
     def _run(self, identity, kind, language):
         try:
             patterns = '*.png *.jpg *.jpeg' if kind == 'image' else '*.mov *.mp4 *.mkv *.avi *.webm *.m4v *.mxf'
+            if kind=='media':patterns+=' *.png *.jpg *.jpeg'
             catalog=json.loads((Path(__file__).parent/'locales'/f'{language}.json').read_text(encoding='utf-8'))
-            title='CorridorKey – '+catalog['Collect project and media…' if kind=='folder' else 'Choose mask…']
+            title='CorridorKey – '+catalog['Collect project and media…' if kind=='folder' else 'Choose background…' if kind=='media' else 'Choose mask…']
             label=catalog['Matte']
             if shutil.which('zenity'):
                 args=['zenity','--file-selection','--title='+title]

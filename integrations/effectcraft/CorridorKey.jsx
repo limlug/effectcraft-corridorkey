@@ -52,8 +52,9 @@
     var tabs = add(ui, "tabbedpanel", "tabs", "");
     tabs.alignChildren = ["fill", "top"];
     var settings = section(t("Clip"));
-    var despill = choice(settings, t("Remove green spill"), "despill", [t("Off"), t("Low"), t("Medium"), t("High")], Number(setting("despill", "2")));
-    add(settings, "statictext", "despillHelp", t("Reduces green around hair and edges."));
+    var despill = choice(settings, t("Spill strength"), "despill", [t("Off"), t("Low"), t("Medium"), t("High")], Number(setting("despill", "2")));
+
+    var spillColor=choice(settings,t("Spill colour"),"spillColor",[t("Green"),t("Blue"),t("Off")],0);
     var useHint = add(settings, "checkbox", "useHint", t("Use a starting mask"));
     var hintGroup = settings.add("group");
     hintGroup.orientation = "column";
@@ -61,12 +62,12 @@
     hintGroup.visible = false;
     var hint = field(hintGroup, t("Image path"), "hint", "");
     var quality = choice(hintGroup, t("Mask accuracy"), "quality", [t("Precise mask"), t("Rough mask")], 0);
-    add(hintGroup, "statictext", "hintHelp", t("PNG/JPG of the first frame in the range.\nWhite stays; black is removed."), {multiline: true});
+    add(hintGroup, "statictext", "hintHelp", t("Reference frame (blank = range start)"), {multiline: true});
     add(settings, "statictext", "rangeHelp", t("Different frame rates may need extra frames\nfor accurate import timing."), {multiline:true});
     var range = choice(settings, t("Time range"), "range", [t("Entire source file"), t("Trimmed layer"), t("Work area")], 0);
     var format = choice(settings, t("Output"), "format", [t("MOV with transparency"), t("EXR sequence · Half"), t("EXR sequence · Float")], 0);
     var hintVideo = add(hintGroup, "checkbox", "hintVideo", t("Use a mask video"));
-    var layerMask = add(hintGroup, "checkbox", "layerMask", t("Use the layer's closed Add mask"));
+    var layerMask = add(hintGroup, "checkbox", "layerMask", t("Use layer masks"));
     var browse = add(hintGroup, "button", "browse", t("Choose mask…"));
     var finish = section(t("Edges"));
     add(finish, "statictext", "matteHelp", t("Black/white in percent; edges in output pixels."), {multiline:true});
@@ -74,6 +75,8 @@
     var white = field(finish, t("White point %"), "white", "100");
     var expand = field(finish, t("Expand / contract px"), "expand", "0");
     var feather = field(finish, t("Feather px"), "feather", "0");
+    var coreStrength=field(finish,t("Opaque core %"),"coreStrength","0");
+    var edgeStrength=field(finish,t("Edge coverage %"),"edgeStrength","100");
     var refine = add(finish,"button","refine",t("Apply correction without running AI"));
     var presets = choice(finish, t("My presets"), "presets", [t("Default")], 0);
     var presetName = field(finish, t("Name"), "presetName", t("My preset"));
@@ -91,6 +94,38 @@
     var previewImage = add(previewTab, "image", "previewImage", "");
     previewImage.preferredSize = [280, 180];
     add(previewTab, "statictext", "previewHelp", t("Preview uses half the model resolution.\nRemove background creates full quality.\nThe mask must match the range's first frame."), {multiline:true});
+    var reviewTab=section(t("Detail review"));
+    var detailFrame=field(reviewTab,t("Frame"),"detailFrame","0");
+    var stepRow=reviewTab.add("group");
+    var frameBack=add(stepRow,"button","frameBack",t("Previous frame"));
+    var frameNext=add(stepRow,"button","frameNext",t("Next frame"));
+    var detailZoom=choice(reviewTab,t("Zoom"),"detailZoom",["1x","2x","4x","8x","16x"],0);
+    var centreX=field(reviewTab,t("Centre X %"),"centreX","50");
+    var centreY=field(reviewTab,t("Centre Y %"),"centreY","50");
+    var detailView=choice(reviewTab,t("View"),"detailView",[t("Checkerboard"),t("Matte"),t("Before / after"),t("Original")],2);
+    var detailBackground=choice(reviewTab,t("Background"),"detailBackground",[t("Checkerboard"),t("White"),t("Black"),t("Grey")],0);
+    var backdropPath=field(reviewTab,t("Background file"),"backdropPath","");
+    var backdropBrowse=add(reviewTab,"button","backdropBrowse",t("Choose background…"));
+    var split=add(reviewTab,"slider","split",50);split.minvalue=0;split.maxvalue=100;split.value=50;
+    var inspect=add(reviewTab,"button","inspect",t("Update detail"));
+    var detailImage=add(reviewTab,"image","detailImage","");detailImage.preferredSize=[320,180];
+    var detailStatus=add(reviewTab,"statictext","detailStatus",t("Full-frame decoding; playback preview is unchanged."),{multiline:true});
+    var variantRow=reviewTab.add("group");
+    var saveA=add(variantRow,"button","saveA",t("Remember A")),saveB=add(variantRow,"button","saveB",t("Remember B"));
+    var compareRow=reviewTab.add("group");
+    var viewA=add(compareRow,"button","viewA",t("View A")),viewB=add(compareRow,"button","viewB",t("View B"));
+    var originalResult=add(reviewTab,"button","originalResult",t("Original result"));
+    var maskTab=section(t("Mask assistant"));
+    var referenceFrame=field(maskTab,t("Reference frame (blank = range start)"),"referenceFrame","");
+    var referencePlayhead=add(maskTab,"button","referencePlayhead",t("Use playhead"));
+    var openReference=add(maskTab,"button","openReference",t("Inspect reference / mask"));
+    var maskImage=add(maskTab,"image","maskImage","");maskImage.preferredSize=[320,180];
+    var pointMode=choice(maskTab,t("Selection point"),"pointMode",[t("Keep"),t("Remove")],0);
+    var pointX=field(maskTab,t("Point X %"),"pointX","50"),pointY=field(maskTab,t("Point Y %"),"pointY","50");
+    var addPoint=add(maskTab,"button","addPoint",t("Add point"));
+    var clearPoints=add(maskTab,"button","clearPoints",t("Clear points"));
+    var buildSelection=add(maskTab,"button","buildSelection",t("Build colour selection"));
+    var maskStatus=add(maskTab,"statictext","maskStatus",t("Click the image or enter point coordinates. Rough colour selection; not AI segmentation."),{multiline:true});
     var queueTab = section(t("Jobs"));
     var queueList = choice(queueTab, t("Saved jobs"), "queueList", [], 0);
     var retry=add(queueTab,"button","retry",t("Repeat job unchanged"));
@@ -137,6 +172,9 @@
     unload.visible=false;
     var low = add(extra, "checkbox", "low", t("Reduce memory usage"));
     low.value = setting("low", "false") === "true";
+    var temporal=choice(extra,t("Temporal window"),"temporal",[t("Automatic"),"4","8","16","32","80"],0);
+    var gpuInfo=add(extra,"statictext","gpuInfo",t("GPU information is available on refresh."),{multiline:true});
+    var gpuRefresh=add(extra,"button","gpuRefresh",t("Refresh GPU"));
     var hide = add(extra, "checkbox", "hide", t("Hide original picture after insertion"));
     hide.value = setting("hide", "true") === "true";
     var manual = add(extra, "checkbox", "manual", t("Configure connection manually"));
@@ -156,6 +194,7 @@
     tabs.selection = settings;
     var projectSeen = "";
     var records = [], pickerId = null, pickerPurpose="hint", restoring = false, presetData = {};
+    var reviewTask=null,reviewPurpose="",reviewJob=null,maskReference=null,selectionPoints=[];
     var playback=null, playing=false, playOrigin=0, playAnchor=0, playerWaiting=false, lastFramePath="", lastPlayerStep=0;
     var fileTask=null, fileTaskKind="", cleanPlan=null, lastPackage="", packagePresets=null, fileTaskRestored=false;
     try { presetData = JSON.parse(setting("presets", "{}")); } catch (ignore) {}
@@ -354,7 +393,7 @@
     }
     function connectNow() {
         var hello = request("hello");
-        if (hello.api !== 1 || hello.backend !== "stock-cli") throw new Error(t("Unsupported service version."));
+        if (hello.api !== 1 || hello.backend !== "stock-cli" || hello.review_api !== 1) throw new Error(t("Unsupported service version."));
         connected = true;
         connection.text = hello.auto_updates === false && /^0\.16\./.test(app.version) ?
             t("Connected · for automatic updates:\nopen EffectCraft through CorridorKey") : t("Connected · ready locally");
@@ -367,7 +406,7 @@
         if (!trim(control.text) || !isFinite(value) || value<lo || value>hi) throw new Error(t("{field}: enter a number between {min} and {max}.",{field:control.displayName||control.name,min:lo,max:hi}));
         return value;
     }
-    function optionsFor(selected, isPreview) {
+    function optionsFor(selected, isPreview, inspectOnly) {
         var layer=selected.layer, source=selected.source, comp=selected.comp;
         var fps=source.frameRate, nativeFps=source.mainSource.nativeFrameRate || fps;
         var a=0, b=null, ratio=layer.stretch/100, trimIn=layer.inPoint, trimOut=layer.outPoint;
@@ -397,23 +436,30 @@
         var bw=numeric(black,0,100)/100, ww=numeric(white,0,100)/100, ex=numeric(expand,-32,32);
         if (bw>=ww) throw new Error(t("Black point must be lower than white point."));
         if (Math.floor(ex)!==ex) throw new Error(t("Enter edge expansion in whole pixels."));
-        if (useHint.value && !layerMask.value && !trim(hint.text)) throw new Error(t("Choose a mask image path or disable the starting mask."));
-        var exportedMask=null;
+        if (!inspectOnly && useHint.value && !layerMask.value && !trim(hint.text)) throw new Error(t("Choose a mask image path or disable the starting mask."));
+        var exportedMask=null,maskStack=null;
+        var rf=trim(referenceFrame.text)===""?null:numeric(referenceFrame,0,1e9);
+        if(rf!==null && Math.floor(rf)!==rf)throw new Error(t("Reference frame must be an integer."));
         if(useHint.value && layerMask.value) {
-            var masks=layer.property("ADBE Mask Parade"), m=masks && masks.numProperties===1?masks.property(1):null;
-            if(!m || m.maskMode!==MaskMode.ADD)throw new Error(t("Create exactly one closed Add mask on the layer."));
-            var time=layer.startTime+Math.floor(a*nativeFps+1e-6)/fps*ratio;
-            var shape=m.property("ADBE Mask Shape").valueAtTime(time,true);
-            if(!shape.closed || shape.featherRadii && shape.featherRadii.length)throw new Error(t("Use a closed mask without variable feather points."));
-            exportedMask={vertices:shape.vertices,inTangents:shape.inTangents,outTangents:shape.outTangents,
-                width:source.width,height:source.height,inverted:!!m.inverted,
-                opacity:m.property("ADBE Mask Opacity").valueAtTime(time,true),
-                feather:m.property("ADBE Mask Feather").valueAtTime(time,true),
-                expansion:m.property("ADBE Mask Offset").valueAtTime(time,true)};
+            var masks=layer.property("ADBE Mask Parade");
+            if(!masks || !masks.numProperties || masks.numProperties>16)throw new Error(t("Create 1 to 16 closed Add/Subtract masks."));
+            var time=layer.startTime+(rf===null?Math.floor(a*nativeFps+1e-6):rf)/fps*ratio;
+            maskStack=[];
+            for(var mi=1;mi<=masks.numProperties;mi++){
+                var m=masks.property(mi);
+                if(m.maskMode!==MaskMode.ADD && m.maskMode!==MaskMode.SUBTRACT)throw new Error(t("Create 1 to 16 closed Add/Subtract masks."));
+                var shape=m.property("ADBE Mask Shape").valueAtTime(time,true);
+                if(!shape.closed || shape.featherRadii && shape.featherRadii.length)throw new Error(t("Use a closed mask without variable feather points."));
+                maskStack.push({mode:m.maskMode===MaskMode.ADD?"keep":"remove",mask:{vertices:shape.vertices,inTangents:shape.inTangents,outTangents:shape.outTangents,
+                    width:source.width,height:source.height,inverted:!!m.inverted,
+                    opacity:m.property("ADBE Mask Opacity").valueAtTime(time,true),
+                    feather:m.property("ADBE Mask Feather").valueAtTime(time,true),
+                    expansion:m.property("ADBE Mask Offset").valueAtTime(time,true)}});
+            }
         }
-        return {input:source.file.fsName,layer_mask:exportedMask,hint:useHint.value && !layerMask.value && !hintVideo.value ? trim(hint.text) : "",
+        return {input:source.file.fsName,layer_mask:exportedMask,mask_stack:maskStack,reference_frame:rf,temporal_window:[0,4,8,16,32,80][index(temporal)],hint:useHint.value && !layerMask.value && !hintVideo.value ? trim(hint.text) : "",
             hint_video:useHint.value && !layerMask.value && hintVideo.value ? trim(hint.text) : "",hint_quality:index(quality)===1?.75:.95,
-            despill:[0,.25,.5,1][index(despill)],low_vram:!!low.value,keep_warm:!!warm.value,keep_cache:!!keepCache.value,
+            despill:[0,.25,.5,1][index(despill)],despill_color:["green","blue","off"][index(spillColor)],core_strength:numeric(coreStrength,0,100)/100,edge_strength:numeric(edgeStrength,0,200)/100,low_vram:!!low.value,keep_warm:!!warm.value,keep_cache:!!keepCache.value,
             range_start:a,range_end:b,preview:!!isPreview,preview_seconds:numeric(previewSeconds,.04,10),preview_scale:.5,
             matte_black:bw,matte_white:ww,matte_expand:ex,matte_feather:numeric(feather,0,16),
             output_format:index(format)?"exr":"video",exr_dtype:index(format)===2?"float":"half",
@@ -444,7 +490,7 @@
         var b=numeric(black,0,100)/100,w=numeric(white,0,100)/100,e=numeric(expand,-32,32);
         if(b>=w)throw new Error(t("Black point must be lower than white point."));
         if(Math.floor(e)!==e)throw new Error(t("Enter edge expansion in whole pixels."));
-        return {despill:[0,.25,.5,1][index(despill)],matte_black:b,matte_white:w,matte_expand:e,
+        return {despill:[0,.25,.5,1][index(despill)],despill_color:["green","blue","off"][index(spillColor)],core_strength:numeric(coreStrength,0,100)/100,edge_strength:numeric(edgeStrength,0,200)/100,matte_black:b,matte_white:w,matte_expand:e,
             matte_feather:numeric(feather,0,16),output_format:index(format)?"exr":"video",exr_dtype:index(format)===2?"float":"half",keep_warm:!!warm.value};
     }
     refine.onClick=guarded(function(){
@@ -469,7 +515,10 @@
         despill.selection=nearest;black.text=String(o.matte_black*100);white.text=String(o.matte_white*100);
         expand.text=String(o.matte_expand);feather.text=String(o.matte_feather);low.value=o.low_vram;warm.value=o.keep_warm;
         keepCache.value=o.keep_cache!==false;format.selection=o.output_format==="exr"?(o.exr_dtype==="float"?2:1):0;
-        useHint.value=!!(o.hint||o.hint_video||o.layer_mask);hintVideo.value=!!o.hint_video;layerMask.value=!!o.layer_mask;
+        useHint.value=!!(o.hint||o.hint_video||o.layer_mask||o.mask_stack);hintVideo.value=!!o.hint_video;layerMask.value=!!(o.layer_mask||o.mask_stack);
+        spillColor.selection=o.despill_color==="blue"?1:o.despill_color==="off"?2:0;coreStrength.text=String((o.core_strength||0)*100);edgeStrength.text=String((o.edge_strength===undefined?1:o.edge_strength)*100);
+        referenceFrame.text=o.reference_frame===null || o.reference_frame===undefined?"":String(o.reference_frame);
+        temporal.selection=[0,4,8,16,32,80].indexOf(o.temporal_window||0);
         hint.text=o.hint||o.hint_video||"";hintGroup.visible=useHint.value;quality.selection=o.hint_quality<.9?1:0;
         status.text=t("Job settings loaded. Apply Edges corrections or run again.");
         ui.layout.layout(true);
@@ -507,6 +556,59 @@
         playAnchor=Date.now();playerStep(playAnchor);
     });
     scrub.onChanging=scrub.onChange=guarded(function(){var position=scrub.value;ensurePlayer();scrub.value=position;playing=false;play.text=t("Play");playerStep(Date.now());});
+    function reviewBusy(busy){inspect.enabled=frameBack.enabled=frameNext.enabled=openReference.enabled=buildSelection.enabled=addPoint.enabled=clearPoints.enabled=!busy;}
+    function beginReview(task,purpose){reviewTask=task.id;reviewPurpose=purpose;reviewBusy(true);if(purpose==="detail")detailStatus.text=t("Preparing preview…");else maskStatus.text=t("Preparing preview…");}
+    function inspectDetail(){
+        if(reviewTask)return;
+        if(!pending || pending.job.state!=="completed")throw new Error(t("Select a finished job first."));
+        var frame=numeric(detailFrame,0,pending.job.frame_count-1);
+        if(Math.floor(frame)!==frame)throw new Error(t("Reference frame must be an integer."));
+        reviewJob=pending.job.id;
+        beginReview(request("review.detail",{id:reviewJob,frame:frame,zoom:[1,2,4,8,16][index(detailZoom)],x:numeric(centreX,0,100)/100,y:numeric(centreY,0,100)/100,
+            split:Number(split.value)/100,view:["checker","matte","comparison","original"][index(detailView)],background:["checker","white","black","grey"][index(detailBackground)],backdrop:trim(backdropPath.text)}),"detail");
+    }
+    inspect.onClick=guarded(inspectDetail);
+    frameBack.onClick=guarded(function(){detailFrame.text=String(Math.max(0,Number(detailFrame.text)-1));inspectDetail();});
+    frameNext.onClick=guarded(function(){if(!pending)throw new Error(t("Select a finished job first."));detailFrame.text=String(Math.min(pending.job.frame_count-1,Number(detailFrame.text)+1));inspectDetail();});
+    split.onChange=guarded(inspectDetail);
+    backdropBrowse.onClick=guarded(function(){pickerPurpose="backdrop";pickerId=request("picker.start",{kind:"media",language:i18n.language}).id;});
+    function rememberVariant(key){if(!pending || pending.job.state!=="completed")throw new Error(t("Select a finished job first."));save(key,pending.job.id);detailStatus.text=t("Variant saved.");}
+    function viewVariant(key){var id=setting(key,"");for(var n=0;n<records.length;n++)if(records[n].job.id===id){stopPlayer();pending=records[n];update(pending.job);inspectDetail();return;}throw new Error(t("Select a finished job first."));}
+    saveA.onClick=guarded(function(){rememberVariant("variantA");});saveB.onClick=guarded(function(){rememberVariant("variantB");});
+    viewA.onClick=guarded(function(){viewVariant("variantA");});viewB.onClick=guarded(function(){viewVariant("variantB");});
+    originalResult.onClick=guarded(function(){
+        if(!pending)throw new Error(t("Select a finished job first."));
+        var root=pending,seen={};
+        while(root.job.refine_of && !seen[root.job.id]){seen[root.job.id]=true;var found=null;
+            for(var n=0;n<records.length;n++)if(records[n].job.id===root.job.refine_of)found=records[n];
+            if(!found)break;root=found;
+        }stopPlayer();pending=root;update(pending.job);inspectDetail();
+    });
+    referencePlayhead.onClick=guarded(function(){var item=chosenLayer(),ratio=item.layer.stretch/100,fps=item.source.frameRate,nativeFps=item.source.mainSource.nativeFrameRate||fps;
+        referenceFrame.text=String(Math.max(0,Math.floor((item.comp.time-item.layer.startTime)/ratio*fps+1e-6)));});
+    openReference.onClick=guarded(function(){if(reviewTask)return;var item=chosenLayer(),o=optionsFor(item,false,true),frame=o.reference_frame===null?Math.floor(o.range_start*o.context.native_fps+1e-6):o.reference_frame;
+        maskReference=null;selectionPoints=[];beginReview(request("mask.reference",{input:o.input,frame:frame,mask_stack:o.mask_stack,hint:useHint.value && !hintVideo.value && !layerMask.value?trim(hint.text):""}),"reference");});
+    function point(x,y){if(reviewTask)return;if(!maskReference)throw new Error(t("Inspect the reference first."));if(selectionPoints.length>=128)return;selectionPoints.push({x:x,y:y,keep:index(pointMode)===0});if(!reviewTask)beginReview(request("mask.points",{id:maskReference.id,points:selectionPoints}),"points");maskStatus.text=t("{count} selection points",{count:selectionPoints.length});}
+    addPoint.onClick=guarded(function(){point(numeric(pointX,0,100)/100,numeric(pointY,0,100)/100);});
+    if(maskImage.addEventListener)maskImage.addEventListener("mousedown",guarded(function(event){if(!maskReference)return;var size=maskImage.size||[320,180],w=size.width||size[0],h=size.height||size[1];
+        var scale=Math.min(1,320/maskReference.width,180/maskReference.height),iw=maskReference.width*scale,ih=maskReference.height*scale;
+        var x=(event.clientX-(w-iw)/2)/iw,y=(event.clientY-(h-ih)/2)/ih;if(x>=0 && x<=1 && y>=0 && y<=1)point(x,y);}));
+    clearPoints.onClick=guarded(function(){selectionPoints=[];if(maskReference && !reviewTask)beginReview(request("mask.points",{id:maskReference.id,points:selectionPoints}),"points");maskStatus.text=t("{count} selection points",{count:0});});
+    buildSelection.onClick=guarded(function(){if(reviewTask)return;if(!maskReference)throw new Error(t("Inspect the reference first."));beginReview(request("mask.select",{id:maskReference.id,points:selectionPoints}),"selection");});
+    gpuRefresh.onClick=guarded(function(){var data=request("gpu.status");gpuInfo.text="";if(!data.available){gpuInfo.text=t("GPU information unavailable.");return;}for(var n=0;n<data.devices.length;n++){var d=data.devices[n];gpuInfo.text+=t("{name}: {used}/{total} MB used; {free} MB free",{name:d.name,used:d.used_mb,total:d.total_mb,free:d.free_mb})+"\n";}});
+    function pollReview(){
+        if(!reviewTask)return;var task=request("task.status",{id:reviewTask});if(task.state==="running")return;
+        reviewTask=null;reviewBusy(false);if(task.state!=="completed")throw i18n.serviceError(task.error||task.message);
+        var r=task.result;if(reviewPurpose==="detail"){
+            if(!pending || pending.job.id!==reviewJob)return;
+            detailImage.image=ScriptUI.newImage(new File(r.path));detailStatus.text=t("Frame {frame} / {count}",{frame:r.frame,count:r.frames-1});
+        }else{
+            var item=chosenLayer();if(item.source.file.fsName!==r.input)throw new Error(t("Source changed; inspect reference again."));
+            maskReference=r;maskImage.image=ScriptUI.newImage(new File(r.path));
+            if(reviewPurpose==="selection"){hint.text=r.hint;quality.selection=1;useHint.value=true;hintVideo.value=false;layerMask.value=false;hintGroup.visible=true;referenceFrame.text=String(r.frame);}
+            maskStatus.text=reviewPurpose==="points"?t("{count} selection points",{count:selectionPoints.length}):t("Frame {frame} / {count}",{frame:r.frame,count:r.total-1});
+        }ui.layout.layout(true);
+    }
     function bytes(n){return n>=1073741824?(n/1073741824).toFixed(2)+" GB":(n/1048576).toFixed(1)+" MB";}
     function references(){
         var paths=[];
@@ -529,6 +631,7 @@
             var count=Math.round(source.duration*source.frameRate),begin=Math.floor(o.range_start*fps+1e-6);
             var end=o.range_end===null?count:Math.min(count,Math.ceil(o.range_end*fps-1e-6));
             if(end<=begin)throw new Error(t("The range contains no source frames."));
+            if(o.reference_frame!==null && o.reference_frame>begin)total+=source.width*source.height*(4*(o.reference_frame-begin+1)+8*(end-begin)+16);
             frames+=end-begin;total+=(end-begin)*source.width*source.height*(16+(o.output_format==="exr"&&o.exr_dtype==="float"?16:8));
         }
         if(!isFinite(total))throw new Error(t("Could not determine source dimensions."));
@@ -780,7 +883,7 @@
         if(pending)update(pending.job);
     }
     function presetValues() {
-        return {despill:index(despill),low:!!low.value,warm:!!warm.value,black:black.text,white:white.text,
+        return {spillColor:index(spillColor),core:coreStrength.text,edge:edgeStrength.text,temporal:index(temporal),despill:index(despill),low:!!low.value,warm:!!warm.value,black:black.text,white:white.text,
             expand:expand.text,feather:feather.text,format:index(format),quality:index(quality)};
     }
     function presetMenu() {
@@ -798,7 +901,7 @@
     presets.onChange=guarded(function(){
         var keys=[t("Default")];for(var key in presetData)if(owns(presetData,key))keys.push(key);
         var key=keys[index(presets)],v=index(presets)?presetData[key]:{despill:2,low:false,warm:true,black:"0",white:"100",expand:"0",feather:"0",format:0,quality:0};
-        if(!v)return;despill.selection=v.despill;low.value=v.low;warm.value=v.warm;
+        if(!v)return;spillColor.selection=v.spillColor||0;coreStrength.text=v.core||"0";edgeStrength.text=v.edge===undefined?"100":v.edge;temporal.selection=v.temporal||0;despill.selection=v.despill;low.value=v.low;warm.value=v.warm;
         black.text=v.black;white.text=v.white;expand.text=v.expand;feather.text=v.feather;format.selection=v.format;quality.selection=v.quality;presetName.text=index(presets)?key:t("My preset");
     });
     presetDelete.onClick=guarded(function(){
@@ -811,7 +914,7 @@
         lastTick = Date.now();
         ticks++;
         var currentProject=app.project.file?app.project.file.fsName:"";
-        if(projectSeen!==currentProject){stopPlayer();if(projectSeen)remember();records=[];pending=null;restoring=false;projectSeen=currentProject;insert.enabled=false;refreshQueue();}
+        if(projectSeen!==currentProject){if(reviewTask){try{request("task.cancel",{id:reviewTask});}catch(ignore){}reviewTask=null;reviewBusy(false);}maskReference=null;selectionPoints=[];stopPlayer();if(projectSeen)remember();records=[];pending=null;restoring=false;projectSeen=currentProject;insert.enabled=false;refreshQueue();}
         updateSelection();
         try {
             if (!connected) {
@@ -820,7 +923,7 @@
             }
             if (pickerId) {
                 var pick=request("picker.status",{id:pickerId});
-                if(pick.state!=="pending"){pickerId=null;if(pick.state==="selected"){if(pickerPurpose==="package")startPackage(pick.path);else{hint.text=pick.path;useHint.value=true;hintGroup.visible=true;ui.layout.layout(true);}}else if(pick.state==="error")throw i18n.serviceError(pick.error);}
+                if(pick.state!=="pending"){pickerId=null;if(pick.state==="selected"){if(pickerPurpose==="package")startPackage(pick.path);else if(pickerPurpose==="backdrop")backdropPath.text=pick.path;else{hint.text=pick.path;useHint.value=true;hintGroup.visible=true;ui.layout.layout(true);}}else if(pick.state==="error")throw i18n.serviceError(pick.error);}
             }
             if (!restoring && currentProject) { restore(); restoring=true; }
             var queueChanged=false;
@@ -828,7 +931,7 @@
                 records[q].job=request("status",{id:records[q].job.id});queueChanged=true;
             }
             if(queueChanged) refreshQueue();
-            restoreFileTask();pollFiles();
+            restoreFileTask();pollFiles();pollReview();
             if(ticks%5===1)updateStorage();
             if (pending && pending.inserted && pending.insertedLayer !== undefined &&
                 app.project.file && app.project.file.fsName === pending.project &&

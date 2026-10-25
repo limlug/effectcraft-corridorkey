@@ -42,3 +42,16 @@ jobs:
           git clone --no-checkout https://github.com/nikopueringer/CorridorKey2.0.git runtime/CorridorKey2.0
           git -C runtime/CorridorKey2.0 checkout --detach 485f5e9ab759ead6138cc990776184b59d6ea971
           git -C runtime/CorridorKey2.0 diff --exit-code HEAD
+  image-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image test dependencies
+        run: python -m pip install numpy==1.26.4 opencv-python-headless==4.11.0.86
+      - name: Install video test tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Numerical masks and exact-frame reference workflows
+        run: python -m unittest discover -s integrations/effectcraft -p 'test_*.py' -v

@@ -26,7 +26,9 @@ def validate(params):
                     preview=False, range_start=0.0, range_end=None, preview_seconds=2.0,
                     preview_scale=0.5, output_format="video", exr_dtype="half",
                     matte_black=0.0, matte_white=1.0, matte_expand=0, matte_feather=0.0,
-                    keep_warm=True, context={}, layer_mask=None, keep_cache=True)
+                    keep_warm=True, context={}, layer_mask=None, keep_cache=True,
+                    despill_color="green", core_strength=0.0, edge_strength=1.0, temporal_window=0,
+                    reference_frame=None, mask_stack=None)
     if not isinstance(params, dict) or set(params) - (set(defaults) | {"input"}):
         raise ValueError("Unbekannte Auftragsoptionen")
     options = dict(defaults, **params)
@@ -34,10 +36,20 @@ def validate(params):
     for key, types in [("hint", IMAGES), ("hint_video", MOVIES)]:
         if not isinstance(options[key], str) or len(options[key]) > 8192: raise ValueError(key + ": Dateipfad erforderlich")
         if options[key]: options[key] = file_path(options[key], key, types)
+    if options['despill_color'] not in ('green','blue','off'):raise ValueError('Invalid spill colour')
+    number(options['core_strength'],'Core',0,1);number(options['edge_strength'],'Edges',0,2)
+    number(options['temporal_window'],'Temporal window',0,80)
+    if options['temporal_window'] not in (0,4,8,16,32,80):raise ValueError('Invalid temporal window')
+    if options['reference_frame'] is not None:
+        number(options['reference_frame'],'Reference frame',0,1e9)
+        if options['reference_frame']!=int(options['reference_frame']):raise ValueError('Reference frame must be an integer')
+    if options['mask_stack'] is not None:
+        from mask_hint import validate_stack
+        validate_stack(options['mask_stack'])
     if options["layer_mask"] is not None:
         from mask_hint import validate_mask
         validate_mask(options["layer_mask"])
-    if sum(bool(options[k]) for k in ("hint", "hint_video", "layer_mask")) > 1:
+    if sum(bool(options[k]) for k in ("hint", "hint_video", "layer_mask", "mask_stack")) > 1:
         raise ValueError("Startmaske oder Maskenvideo verwenden, nicht beides gleichzeitig")
     for key, lo, hi in [("hint_quality", 0, 1), ("despill", 0, 1), ("range_start", 0, 1e9),
                         ("preview_seconds", 0.04, 10), ("preview_scale", 0.25, 1),

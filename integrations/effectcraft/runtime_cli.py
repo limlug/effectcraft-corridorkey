@@ -10,6 +10,8 @@ def arguments(root,source,folder,options,initial_hint=None,hint_video=None):
         '--temp_dir',str(Path(folder)/'temp'),
         '--hint_quality',str(options['hint_quality']),
         '--model_scale',str(options['preview_scale'] if options['preview'] else 1)]
+    window=options.get('temporal_window',0)
+    if window:args += ['--hann_chunk',str(window),'--hann_stride',str(max(1,window//2))]
     if options['low_vram']:args.append('--low_vram')
     if initial_hint:args += ['--hint_first_frame',str(initial_hint)]
     if hint_video:args += ['--hint_video',str(hint_video)]

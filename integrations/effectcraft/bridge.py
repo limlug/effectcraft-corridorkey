@@ -62,7 +62,7 @@ def existing_service(path, port):
                 stream.write((json.dumps({"method": "hello", "token": config["token"]}) + "\n").encode())
                 stream.flush()
                 reply = json.loads(stream.readline(MAX_LINE))
-        return reply.get("ok") and reply.get("result", {}).get("api") == 1 and reply.get("result", {}).get("backend") == "stock-cli"
+        return reply.get("ok") and reply.get("result", {}).get("api") == 1 and reply.get("result", {}).get("backend") == "stock-cli" and reply.get("result", {}).get("review_api") == 1
     except (OSError, ValueError, KeyError):
         return False
 
@@ -112,6 +112,7 @@ from player import Player
 from tasks import Tasks
 from bundles import Bundles
 from storage import Storage
+from review import Review,gpu_status
 
 
 class Bridge:
@@ -124,6 +125,7 @@ class Bridge:
         self.player = Player(jobs)
         self.bundles = Bundles(jobs,self.tasks)
         self.storage = Storage(jobs,self.player,self.tasks)
+        self.review = Review(jobs,self.tasks)
 
     def dispatch(self, request):
         if not isinstance(request, dict):
@@ -139,8 +141,13 @@ class Bridge:
             if not isinstance(params.get("id"),str) or not 1<=len(params["id"])<=128:raise ValueError("Missing or invalid id")
         if method == "hello":
             return {"api": 1, "name": "CorridorKey for EffectCraft", "active": self.jobs.active,
-                    "auto_updates": self.auto_updates, "version": "0.6.0", "backend": "stock-cli", "keep_warm_supported": False,
+                    "auto_updates": self.auto_updates, "version": "0.7.0-rc1", "backend": "stock-cli", "keep_warm_supported": False, "review_api": 1,
                     "resident": self.jobs.worker.loaded, "model_loads": self.jobs.worker.loads}
+        if method == 'gpu.status': return gpu_status()
+        if method == 'review.detail': return self.review.detail(params)
+        if method == 'mask.reference': return self.review.reference(params)
+        if method == 'mask.points': return self.review.select(params.get('id'),params.get('points'),True)
+        if method == 'mask.select': return self.review.select(params.get('id'),params.get('points'))
         if method == "retry": return self.jobs.retry(params.get("id"),params.get("changes"))
         if method == "refine": return self.jobs.refine(params.get("id"),params.get("changes"))
         if method == "job.options": return self.jobs.options(params.get("id"))

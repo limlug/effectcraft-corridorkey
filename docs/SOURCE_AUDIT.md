@@ -20,3 +20,9 @@ The scans detect exact matches above chosen thresholds, not paraphrased code, sh
 The existing Linux GPU smoke test exercised original-CLI inference, MOV export, cached corrections and half/float EXR. Full local checks comprise 40 Python bridge/wrapper/localization tests, 5 installer contracts and 42 Node panel checks. CI runs Linux/Windows contract tests and verifies the upstream checkout boundary. CI is not a native Windows inference test.
 
 A fresh disposable-machine installation, native Windows inference, native-speaker translation review and Georgian rendering on a supporting host remain unverified. Release the candidate only with those limitations stated; do not label it as a universally validated stable build.
+
+## 0.7 extension review
+
+The new code remains wrapper-owned: OpenCV colour-seeded selection, exported-frame review/compositing, mask union/exclusion, finishing controls, and orchestration of separate original-CLI passes. No external model implementation or runtime patch was added. GrabCut is invoked from the separately installed OpenCV library; it is not copied into this source. The original upstream checkout remains untouched. Reference reversal and output reordering belong to the wrapper.
+
+The 0.7 source comparison covers all 28 tracked wrapper Python files against the same 55 pinned upstream files, with no identical 40-token windows found. The full source-only release inventory is recorded in SOURCE_MANIFEST.json. Exact-match scans remain supporting evidence, not proof of legal independence.
