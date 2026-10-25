@@ -1,13 +1,17 @@
-# 0.7.0-rc1 — detail review and mask workflow
+# 0.8.0 — edit inserted cutouts in place
 
-New exact-frame inspection with previous/next, crop zoom, movable before/after split and white/black/grey/checkerboard or custom image/video review backgrounds. Bookmark completed A/B results and return through the correction chain to the original.
+Further corrections now update the existing cutout layer automatically instead of adding another layer. The layer keeps its identity, name, timing, animation, effects and masks. The first insertion is still explicit; subsequent cached corrections or matching reruns update that inserted result when finished. Each update is undoable, and an undone correction can be reapplied without another AI run.
 
-Adds Green/Blue/Off spill finishing, separate opaque-core and edge coverage, and preset persistence. Cached corrections still avoid another AI run. The mask assistant inspects the chosen source reference and checks image-mask dimensions. Coloured keep/remove points can generate a rough local GrabCut hint; this is not semantic AI segmentation or Magic Mask. Mark distinct subject colours separately. Up to sixteen Add/Subtract layer-mask snapshots are combined at the reference time.
+- Edges → **Update inserted result in place** is enabled by default. Turn it off to insert a separate variant.
+- Selecting a linked cutout processes the original input, never the already keyed result.
+- Replacements recheck the captured target and preserve its existing interpretation frame rate.
+- Shared/locked result media, manually changed sources and changed source-frame ranges are protected. The current result stays intact if correction processing fails; failed interpretation attempts to restore the previous generated file.
+- All twelve provisional language catalogs include the new controls and notices.
 
-A reference within the processed range can start original-CLI forward and reversed passes, with outputs restored to the original frame order. This requires a matching starting mask, two model loads and additional temporary disk space. Reversal is disk-backed. Mask videos retain their original timing and use the start reference. GPU telemetry and manual temporal-window options supplement the upstream automatic default.
+Includes the 0.7 detail-review, A/B comparison, mask/reference and GPU-memory controls. The wrapper remains MIT licensed; the separately obtained CorridorKey program, models and dependencies retain their own terms. No runtime patches, model implementation or weights are bundled.
 
-The wrapper remains MIT licensed. The official CorridorKey source, weights and dependencies are obtained separately and retain their own licenses. No runtime patches or model implementation are bundled. See docs/QUALITY_OF_LIFE.md for control semantics and limits, and docs/LICENSING.md for the license boundary.
+Validation: 106 local automated checks passed (49 Python, 52 panel, 5 installer). Real EffectCraft 0.16 tests on Linux verified unchanged layer ID, layer/project-item counts, name, timing and position keyframes through repeated cached updates, Undo and reapply. See docs/VALIDATION.md for the full evidence and limits.
 
-Linux GPU and native EffectCraft workflow tests were performed on the existing configured system and short samples of the user's project clip. Windows remains experimental. Fresh disposable-machine installation, native Windows inference, native-speaker translation review and Georgian rendering on a supporting host remain unverified. The twelve catalogs include the new controls, but translations are provisional. This is a prerelease, not a universal production-quality or long-shot matting guarantee.
+Windows remains experimental. Fresh disposable-machine installation, native Windows inference, native-speaker translation review and Georgian rendering on a supporting host remain unverified. A normal minor-release tag does not expand those platform claims.
 
-Update: finish active jobs and stop the previous local service, rerun setup_effectcraft.py, then open the shared launcher. The new panel requires the 0.7 review-capable bridge; existing results and correction caches remain usable.
+Update: finish active jobs, close the old local service, extract/pull this source and rerun setup_effectcraft.py, then start through the shared launcher. Existing output files and correction caches remain available. In-place updates keep earlier generated files on disk for Undo and comparison.

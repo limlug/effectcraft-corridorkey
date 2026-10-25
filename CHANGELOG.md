@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — in-place corrections
+## 0.8.0 — in-place corrections
 
 - Update the existing generated layer automatically after a correction or matching rerun.
 - Preserve layer identity and manual edits; keep replacement undoable and reconcile Undo/redo.

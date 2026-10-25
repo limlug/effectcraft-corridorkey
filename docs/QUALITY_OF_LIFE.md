@@ -1,4 +1,4 @@
-# Quality-of-life controls in 0.7
+# Quality-of-life controls in 0.8
 
 ## Exact-frame review
 
@@ -32,7 +32,7 @@ Automatic leaves the upstream memory/window choice intact. Manual windows map to
 
 Finish/cancel active jobs, close the previous local service, pull/extract this source and rerun setup_effectcraft.py. Relaunch with the shared starter. A 0.7 panel refuses a bridge without the new review capability; the launcher does not silently reuse a 0.6 bridge. Existing outputs and cached jobs remain readable with default values for new settings.
 
-## In-place corrections (development update)
+## In-place corrections (0.8)
 
 Edges → Update inserted result in place is enabled by default. The first result is inserted explicitly. Later cached corrections or reruns for an already inserted result automatically retarget that result's existing generated FootageItem when finished, without adding layers or project items. Selecting a linked cutout still processes its original input. Existing layer ID, name, position, animation, effects, masks, parenting, timing and original-audio handling stay intact because the layer itself is not rebuilt. The output media must retain its source-frame range/count/rate; the existing interpretation rate is preserved. The update has its own Undo group. Undo/redo reconciles record state against the actual file, and an undone correction can be reapplied without another AI run.
 

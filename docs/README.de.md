@@ -2,7 +2,7 @@
 
 Community-Add-on zur lokalen Greenscreen-Freistellung mit CorridorKey 2.0 auf einer NVIDIA-Grafikkarte. Die Oberfläche unterstützt alle elf Sprachen von EffectCraft 0.16. Georgisch ist als zwölfte Übersetzung für neuere Hosts vorbereitet.
 
-**Version 0.7.0 als Veröffentlichungskandidat. Linux geprüft; Windows experimentell.**
+**Version 0.8.0. Linux geprüft; Windows experimentell.**
 
 ## Installation
 

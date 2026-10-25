@@ -2,7 +2,7 @@
 
 ## Automated contracts
 
-The release candidate is checked with the bridge/localization Python suite, the installer contract suite, and 46 Node panel workflow checks. The panel suite exercises all twelve catalogs; keys, values, placeholder sets and UTF-8 integrity are checked separately. Tests also cover automatic language choice, system-locale aliases, manual override persistence, user names containing multiple scripts and recovery from localized service errors.
+The release candidate is checked with the bridge/localization Python suite, the installer contract suite, and 52 Node panel workflow checks. The panel suite exercises all twelve catalogs; keys, values, placeholder sets and UTF-8 integrity are checked separately. Tests also cover automatic language choice, system-locale aliases, manual override persistence, user names containing multiple scripts and recovery from localized service errors.
 
 GPU-independent tests cover queue/retry/correction metadata, manifest recovery, cancellation, portable-package path containment, verified copying and cleanup protection. Numerical matte/mask/writer tests require the runtime dependencies and are skipped by the standard-library-only CI job.
 
@@ -23,7 +23,7 @@ For 0.5, the eleven interface languages accepted by released EffectCraft 0.16 ar
 - Georgian rendering in an EffectCraft build that actually supports it.
 - Performance and VRAM characterization on additional GPUs and footage.
 
-The current candidate must retain prerelease/experimental labels. Do not present remaining checks as completed or advertise every OS as supported.
+Keep Windows experimental and translations provisional. Version 0.8 is a minor release of the tested Linux workflow; the remaining installation, platform and review limits still apply. Do not advertise every OS or production scenario as validated.
 
 ## 0.6 external CLI verification
 
@@ -34,3 +34,9 @@ The new architecture has 40 bridge/localization/wrapper Python tests, 42 Node pa
 The expanded suite includes 49 bridge/localization/wrapper/image tests, 46 Node panel checks and 5 installer contracts (100 checks total). A numerical CI job installs the tested NumPy/OpenCV versions and FFmpeg, so synthetic selection, mask combination, colour/core/edge behavior, exact-frame inspection and bidirectional ordering run without skipped image dependencies. A standalone external-program fixture decodes numbered real frames and proves the forward/reversed merge preserves order and omits the duplicate reference.
 
 On Linux, a three-frame 1280×720 sample from the existing project clip exercised a middle reference, both original-CLI passes, cached finishing, MOV and half/float EXR. The source checkout stayed unchanged. Native EffectCraft 0.16 checks exercised detail review, A/B/original, reference inspection and point selection, plus GPU status, with the test project unchanged. Colour selection was visually checked and revised after a poor foreground initialization was found; authored points for separate subject colours are required. These short workflow samples are not a quantitative quality benchmark or proof of long-shot temporal quality.
+
+## 0.8 in-place verification
+
+106 local checks passed: 49 Python bridge/wrapper/localization/image tests, 52 Node panel checks and 5 installer contracts. The six added panel checks cover automatic replacement without extra layers, Undo/reapply, opting out, shared/locked result protection, restoring the previous media after interpretation failure, and routing a selected cutout back to the original input.
+
+In real EffectCraft 0.16 on Linux, cached corrections updated a three-frame test cutout without changing layer ID, layer/project-item counts, name, comment, source timing or animated position keys. Undo restored the prior generated file; reapplying and repeating the correction preserved the same layer. The test used an isolated profile/project and existing correction data, with no fresh model inference needed. The feature was installed into the user's running panel without restarting its service or changing the project. This does not extend the earlier GPU evidence to new hardware or claim native Windows validation.

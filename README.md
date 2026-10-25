@@ -4,7 +4,7 @@
 
 A community add-on that removes green-screen backgrounds inside [EffectCraft](https://github.com/storytold/effectcraft), using [CorridorKey 2.0](https://github.com/nikopueringer/CorridorKey2.0) locally on an NVIDIA GPU.
 
-**0.7.0 quality-of-life preview · Linux tested · Windows experimental · NVIDIA CUDA required**
+**0.8.0 · in-place corrections · Linux tested · Windows experimental · NVIDIA CUDA required**
 
 [Deutsch](docs/README.de.md) · [Complete installation](docs/INSTALL.md) · [User guide](integrations/effectcraft/README.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Languages](docs/LANGUAGES.md)
 
@@ -17,7 +17,13 @@ A community add-on that removes green-screen backgrounds inside [EffectCraft](ht
 - Saves presets, retries jobs, collects portable project packages and cleans disposable caches.
 - Provides all eleven languages in EffectCraft 0.16 and a Georgian catalog for newer hosts, selected automatically or manually.
 
-## New in 0.7
+## New in 0.8
+
+Further corrections now update an already inserted cutout in place by default. The existing layer, its animation/effects and timing remain intact; no extra layer or project item is added. Each update is undoable. Selecting a linked cutout still uses the original input for processing.
+
+The first result is inserted explicitly. Then adjust Edges and choose Apply correction without running AI; when finished, the inserted result updates automatically. Disable **Update inserted result in place** to insert another variant instead. Shared or locked result media, manually changed sources and changed processing ranges are protected. See [workflow and limits](docs/QUALITY_OF_LIFE.md#in-place-corrections-08).
+
+## Included since 0.7
 
 - Exact-frame detail inspection, frame stepping, 1–16x crop zoom and a movable original/result comparison.
 - White, black, grey, checkerboard or your own image/video as a review background.

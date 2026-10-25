@@ -1,4 +1,4 @@
-# 0.7.0 prerelease release checklist
+# 0.8.0 minor release checklist
 
 ## Prepared
 
@@ -14,11 +14,11 @@
 - [x] Source-only archive excludes footage, credentials, runtime, environments and weights
 - [x] Linux/Windows CI definitions and installer/CLI boundary contracts
 
-## Before publishing a prerelease
+## Publication checks
 
 - [x] Linux/Windows and image-workflow CI configured; publishing requires a successful run for the release commit
 - [x] Final source archive, checksum and release notes reviewed
-- [x] User authorized deploying the tested new version to GitHub; preserve current repository visibility
+- [x] User authorized publishing the in-place update as a minor release on GitHub; preserve current repository visibility
 
 ## Remaining validation (disclosed prerelease limitations)
 

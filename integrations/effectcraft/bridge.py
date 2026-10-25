@@ -141,7 +141,7 @@ class Bridge:
             if not isinstance(params.get("id"),str) or not 1<=len(params["id"])<=128:raise ValueError("Missing or invalid id")
         if method == "hello":
             return {"api": 1, "name": "CorridorKey for EffectCraft", "active": self.jobs.active,
-                    "auto_updates": self.auto_updates, "version": "0.7.0-rc1", "backend": "stock-cli", "keep_warm_supported": False, "review_api": 1,
+                    "auto_updates": self.auto_updates, "version": "0.8.0", "backend": "stock-cli", "keep_warm_supported": False, "review_api": 1,
                     "resident": self.jobs.worker.loaded, "model_loads": self.jobs.worker.loads}
         if method == 'gpu.status': return gpu_status()
         if method == 'review.detail': return self.review.detail(params)
