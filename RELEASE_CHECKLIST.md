@@ -16,8 +16,8 @@
 
 ## Before publishing a prerelease
 
-- [ ] Confirm CI success on the actual publication commit
-- [ ] Review the final source archive, checksum and release notes
+- [x] CI success confirmed for the reviewed source; recheck after changes
+- [x] Final source archive, checksum and release notes reviewed
 - [ ] Authorize public visibility and publishing; repository remains private during preparation
 
 ## Remaining validation (disclosed prerelease limitations)

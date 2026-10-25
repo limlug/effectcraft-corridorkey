@@ -4,7 +4,7 @@
 
 Reviewed candidate: stock-CLI wrapper 0.6.0. The public-source candidate contains the EffectCraft panel and language catalogs, local bridge, job/storage/package/preview orchestration, independent image finishing, installer, tests and documentation. No footage, runtime downloads, Python environments, weights or runtime patches are included. Dependency source and model revisions are recorded in UPSTREAM.md.
 
-- Compared 29 wrapper Python files with all 55 tracked Python files at CorridorKey commit `485f5e9ab759ead6138cc990776184b59d6ea971`, ignoring comments and whitespace: no identical sequences of 40 successive tokens were found.
+- Compared 26 wrapper Python files with all 55 tracked Python files at CorridorKey commit `485f5e9ab759ead6138cc990776184b59d6ea971`, ignoring comments and whitespace: no identical sequences of 40 successive tokens were found.
 - Inspected imports and the execution path: the worker invokes the original CLI via `runtime_cli.py` and `processes.py`. Finishing in `postprocess.py` uses exported images and NumPy/OpenCV, without importing CorridorKey modules. Standard numerical formulas and command-line argument names are interface/algorithm elements; no claim of exclusive authorship in those elements is made.
 - Compared the three wrapper JavaScript/test sources against the inspected EffectCraft `prelude.js` and `scriptui.js`: no identical normalized blocks of at least four lines and 120 characters were found. This is not a full comparison against every EffectCraft file.
 - Reviewed the packaging boundary: the installer fetches upstream separately and rejects modified existing runtime checkouts. Source releases exclude that checkout, dependencies and model files.
